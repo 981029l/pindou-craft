@@ -15,10 +15,11 @@
    - 内置全量 221 种 MARD 色号（包含 HEX、RGB、CIE-Lab 数据）；
    - 基于 CIEDE2000 空间色差计算算法，精确模拟人眼感知；
    - 支持最大用色数限制（12~36 色聚类）与背景抠除模式（保留/挖空/纯色）。
-3. **用户自定义 AI 端点与 Key**：
+3. **用户自定义 AI 端点与 Key (安全零泄露)**：
+   - 默认 API Key 为空，公网部署时绝不暴露站长私有凭据与额度；
    - 支持自由配置 `API Base URL`（如 OpenAI 官方 `https://api.openai.com/v1`、便携 AI `https://api.bianxie.ai/v1`、OneAPI 等中转）；
    - 支持自定义模型（`gpt-image-2`, `dall-e-3`, `gpt-image-1` 等）；
-   - 配置严格存储在本地浏览器（`localStorage`），安全零泄露。
+   - 访客填写的 API Key 严格保存在其各自的本地浏览器（`localStorage`），无需担心密钥泄露。
 4. **专业级 Canvas 交互画布**：
    - 画笔、油漆桶泛洪填充、吸管拾色、橡皮擦；
    - **同色一键高亮**：点击任意色号，自动暗化其余豆子，辅助实体拼豆极速找色；
@@ -51,6 +52,11 @@ npm run build
 
 ---
 
+## 📖 详细使用与部署说明
+> 更多详细操作、实操教程、防盗刷说明与公网部署上线指南，请查阅 📄 [INSTRUCTION.md](./INSTRUCTION.md)。
+
+---
+
 ## 📁 目录结构
 
 ```
@@ -59,15 +65,18 @@ pindou/
 ├── package.json              # 项目依赖与脚本
 ├── vite.config.js            # Vite 配置文件
 ├── tailwind.config.js        # 潮玩毛玻璃主题与色彩扩展
+├── INSTRUCTION.md            # 详尽使用与部署操作手册
 ├── src/
 │   ├── main.jsx              # React 应用主入口
 │   ├── App.jsx               # 工作台布局与状态流转中心
 │   ├── index.css             # 弥散渐变光晕与拼豆拟物质感样式
+│   ├── assets/
+│   │   └── default_sample.webp # 默认示范高清底图
 │   ├── config/
 │   │   └── apiConfig.js      # 全局 AI 配置与本地存储管理中心
 │   ├── data/
 │   │   ├── mardPalette.js    # MARD 221 色卡全量数据与预计算 Lab 空间值
-│   │   └── samplePresets.js  # 热门预置拼豆图纸 (皮卡丘、超级蘑菇、像素心动)
+│   │   └── samplePresets.js  # 热门预置拼豆图纸
 │   ├── core/
 │   │   ├── colorQuantizer.js # CIEDE2000 色差计算与色数收敛算法
 │   │   ├── imageProcessor.js # 图像网格采样与背景抠除管线
@@ -76,11 +85,10 @@ pindou/
 │       ├── Navbar.jsx        # 顶部导航、品牌与快速操作
 │       ├── GlassCard.jsx     # 毛玻璃卡片通用容器
 │       ├── SettingsModal.jsx # 自定义 AI URL 与 Key 配置弹窗
-│       ├── CreationPanel.jsx # 照片上传与 AI 灵感生成控制台
+│       ├── OriginalImageCard.jsx # 原图上传、AI 重构与多候选选择
+│       ├── ParameterSettingsCard.jsx # 尺寸、滤镜与色谱参数控制台
 │       ├── CanvasEditor.jsx  # 核心交互画布与绘图工具箱
-│       ├── PaletteSidebar.jsx# BOM 耗材统计与 221 色卡浏览器
-│       ├── ExportModal.jsx   # A4 高清打印图纸与 CSV 物料导出
-│       └── PresetGallery.jsx # 热门模版选择弹窗
+│       └── ExportModal.jsx   # A4 高清打印图纸与 CSV 物料导出
 └── README.md
 ```
 

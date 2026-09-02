@@ -8,12 +8,11 @@ import SettingsModal from './components/SettingsModal';
 import ExportModal from './components/ExportModal';
 import { getStoredAiConfig } from './config/apiConfig';
 import { processImageToPindouGrid } from './core/imageProcessor';
-
-const DEFAULT_SAMPLE_IMG = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400"><rect width="400" height="400" fill="%23111420"/><circle cx="200" cy="200" r="140" fill="none" stroke="%23f59e0b" stroke-width="4"/><path d="M100 200 Q200 130 300 200 Q200 270 100 200 Z" fill="none" stroke="%23f59e0b" stroke-width="5"/><circle cx="200" cy="200" r="36" fill="%231e293b" stroke="%23f59e0b" stroke-width="4"/><circle cx="200" cy="200" r="16" fill="%23f59e0b"/><path d="M120 150 Q200 110 280 150" fill="none" stroke="%23f59e0b" stroke-width="6" stroke-linecap="round"/></svg>';
+import defaultSampleImg from './assets/default_sample.webp'; // # 默认示范图像资源
 
 export default function App() {
-  const [currentImageSrc, setCurrentImageSrc] = useState(DEFAULT_SAMPLE_IMG);
-  const [patternName, setPatternName] = useState('拼豆图纸 - 超清全色谱');
+  const [currentImageSrc, setCurrentImageSrc] = useState(defaultSampleImg); // # 当前输入图像源
+  const [patternName, setPatternName] = useState('拼豆图纸 - 超清全色谱'); // # 图纸名称
 
   // 默认升级至 160×160 超高清网格，且完全不设上限
   const [gridWidth, setGridWidth] = useState(160);
