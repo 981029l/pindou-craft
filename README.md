@@ -2,6 +2,8 @@
 
 <div align="center">
 
+[![Online Demo](https://img.shields.io/badge/🌐_Online_Demo-pindou.lvky.cn-F59E0B?style=for-the-badge&logo=googlechrome&logoColor=white)](https://pindou.lvky.cn/)
+
 ![Version](https://img.shields.io/badge/version-v1.2.0-amber.svg)
 ![React](https://img.shields.io/badge/React-18.3-blue.svg)
 ![Vite](https://img.shields.io/badge/Vite-6.0-purple.svg)
@@ -12,7 +14,7 @@
 
 *Photo / AI Prompt to Perler Bead Pattern & Bill of Materials (BOM) in One Breath.*
 
-[在线演示](#-本地快速启动) • [使用指南](./INSTRUCTION.md) • [更新日志](#-版本发布记录-changelog) • [功能特性](#-核心功能与亮点)
+[🌐 立即体验 (在线演示: pindou.lvky.cn)](https://pindou.lvky.cn/) • [📖 使用指南](./INSTRUCTION.md) • [📅 更新日志](#-版本发布记录-changelog) • [✨ 功能特性](#-核心功能与亮点)
 
 </div>
 

@@ -1,5 +1,7 @@
 # PinDou Atelier (拼豆创想工坊) 使用与部署说明文档 (v1.2.0)
 
+> 🌐 **官方在线演示站点**：[https://pindou.lvky.cn/](https://pindou.lvky.cn/)
+
 欢迎使用 **PinDou Atelier (拼豆创想工坊)**！本系统是一套专为拼豆（Perler / MARD / Artkal）手作爱好者与工艺设计师打造的高颜值智能图纸转换与工作台系统。
 
 ---
