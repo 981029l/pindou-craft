@@ -149,5 +149,13 @@ pindou/
 
 ---
 
+## 🐧 社区致谢 (Acknowledgements)
+
+本项目认可并特别致谢 **[LINUX DO](https://linux.do/)** 社区及其充满热情、追求卓越的极客伙伴们！真诚感谢社区对开源探索、AI 前沿实践与技术创新提供的宝贵启发与支持。
+
+> *"真诚、友善、团结、专业，共建美好社区。"* —— 致敬 [LINUX DO](https://linux.do/)
+
+---
+
 ## 📄 开源许可
 MIT License © 2026 PinDou Craft Studio
