@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { Sliders, Palette } from 'lucide-react'; // # 移动端标签图标
 import Navbar from './components/Navbar';
 import OriginalImageCard from './components/OriginalImageCard';
 import ParameterSettingsCard from './components/ParameterSettingsCard';
@@ -13,6 +14,7 @@ import defaultSampleImg from './assets/default_sample.webp'; // # 默认示范�
 export default function App() {
   const [currentImageSrc, setCurrentImageSrc] = useState(defaultSampleImg); // # 当前输入图像源
   const [patternName, setPatternName] = useState('拼豆图纸 - 超清全色谱'); // # 图纸名称
+  const [activeMobileTab, setActiveMobileTab] = useState('canvas'); // # 移动端激活标签: 'control' | 'canvas'
 
   // 默认升级至 160×160 超高清网格，且完全不设上限
   const [gridWidth, setGridWidth] = useState(160);
@@ -30,7 +32,7 @@ export default function App() {
 
   // 显示开关
   const [showColorCodes, setShowColorCodes] = useState(true);
-  const [showRulers, setShowRulers] = useState(true);
+  const [showRulers, setShowRulers] = useState(false); // # 默认不选中刻度标尺
   const [compareMode, setCompareMode] = useState(false);
 
   // 核心网格数据
@@ -91,8 +93,9 @@ export default function App() {
     recomputeGrid(currentImageSrc, gridWidth, gridHeight, brightness, contrast, saturation, enableColorLimit, maxColors, paletteBrand, false);
   }, []);
 
-  const handleImageChanged = (newSrc) => {
+  const handleImageChanged = (newSrc) => { // # 图像变更回调
     setCurrentImageSrc(newSrc);
+    setActiveMobileTab('canvas'); // # 移动端自动切换至画布预览
     recomputeGrid(newSrc, gridWidth, gridHeight, brightness, contrast, saturation, enableColorLimit, maxColors, paletteBrand, true);
   };
 
@@ -231,10 +234,40 @@ export default function App() {
         hasApiKey={hasApiKey}
       />
 
+      {/* 移动端沉浸式视图切换 Tabs (仅在小屏下展示) */}
+      <div className="lg:hidden flex items-center justify-center px-3 py-2 bg-white/90 backdrop-blur-md border-b border-stone-200 sticky top-[49px] sm:top-[53px] z-20">
+        <div className="flex bg-stone-100 p-1 rounded-xl w-full max-w-sm shadow-inner">
+          <button
+            type="button"
+            onClick={() => setActiveMobileTab('control')}
+            className={`flex-1 py-1.5 text-xs font-semibold rounded-lg flex items-center justify-center gap-1.5 transition-all ${
+              activeMobileTab === 'control'
+                ? 'bg-white text-stone-900 shadow-xs'
+                : 'text-stone-500 hover:text-stone-900'
+            }`}
+          >
+            <Sliders className="w-3.5 h-3.5" />
+            <span>控制与调色</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveMobileTab('canvas')}
+            className={`flex-1 py-1.5 text-xs font-semibold rounded-lg flex items-center justify-center gap-1.5 transition-all ${
+              activeMobileTab === 'canvas'
+                ? 'bg-white text-stone-900 shadow-xs'
+                : 'text-stone-500 hover:text-stone-900'
+            }`}
+          >
+            <Palette className="w-3.5 h-3.5" />
+            <span>图纸与画布</span>
+          </button>
+        </div>
+      </div>
+
       {/* 主工作区 */}
-      <main className="flex-1 max-w-[1750px] w-full mx-auto p-3 sm:p-5 grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+      <main className="flex-1 max-w-[1750px] w-full mx-auto p-2 sm:p-5 grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-5 items-stretch">
         {/* 左栏 (4 列): 原图上传与参数控制面板 */}
-        <div className="lg:col-span-4 space-y-4">
+        <div className={`lg:col-span-4 space-y-4 flex flex-col justify-start ${activeMobileTab === 'control' ? 'block' : 'hidden lg:block'}`}>
           <OriginalImageCard
             currentImageSrc={currentImageSrc}
             onImageChanged={handleImageChanged}
@@ -267,8 +300,8 @@ export default function App() {
           />
         </div>
 
-        {/* 右栏 (8 列): 图纸预览与超清工作台 */}
-        <div className="lg:col-span-8 flex flex-col h-[840px] rounded-2xl bg-white border border-stone-200 shadow-sm overflow-hidden">
+        {/* 右栏 (8 列): 图纸预览与超清工作台 (PC 端自动延伸与左侧等高齐平) */}
+        <div className={`lg:col-span-8 flex flex-col h-[calc(100vh-130px)] min-h-[560px] lg:h-auto lg:self-stretch lg:min-h-[960px] xl:min-h-[1050px] rounded-2xl bg-white border border-stone-200 shadow-xs overflow-hidden ${activeMobileTab === 'canvas' ? 'flex' : 'hidden lg:flex'}`}>
           <PatternPreviewHeader
             patternName={patternName}
             onPatternNameChange={setPatternName}
@@ -292,6 +325,7 @@ export default function App() {
               selectedColorCode={selectedColorCode}
               onSelectColorCode={setSelectedColorCode}
               highlightColorCode={highlightColorCode}
+              onToggleHighlightColorCode={(code) => setHighlightColorCode(prev => prev === code ? null : code)}
               paletteBrand={paletteBrand}
               showGridLines={true}
               showColorCodes={showColorCodes}

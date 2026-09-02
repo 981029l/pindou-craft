@@ -255,17 +255,17 @@ export default function OriginalImageCard({
           <button
             onClick={handleRealAiRemaster}
             disabled={isAiGenerating}
-            className="w-full py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md hover:shadow-lg transition-all disabled:opacity-50"
+            className="w-full py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 active:scale-98 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md hover:shadow-lg transition-all disabled:opacity-50"
           >
             {isAiGenerating ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin" />
-                <span>AI 正在生图并生成多方案中...</span>
+                <span>AI 正在绘制图纸中...</span>
               </>
             ) : (
               <>
-                <Zap className="w-3.5 h-3.5 fill-current" />
-                <span>✨ 启动 AI 原图保真重构 (调用 API 接口)</span>
+                <Sparkles className="w-3.5 h-3.5 fill-current" />
+                <span>AI 智能重绘图纸</span>
               </>
             )}
           </button>
@@ -273,10 +273,10 @@ export default function OriginalImageCard({
           <button
             onClick={handleLocalDirectQuantize}
             disabled={isAiGenerating}
-            className="w-full py-2 rounded-xl bg-stone-100 hover:bg-stone-200 border border-stone-200 text-stone-800 font-semibold text-xs flex items-center justify-center gap-1.5 transition-colors"
+            className="w-full py-2 rounded-xl bg-stone-100 hover:bg-stone-200 active:scale-98 border border-stone-200 text-stone-800 font-semibold text-xs flex items-center justify-center gap-1.5 transition-colors"
           >
-            <Play className="w-3 h-3 fill-current text-stone-600" />
-            <span>📷 本地原图直接出图 (不耗 Token · 1:1 直出)</span>
+            <Zap className="w-3.5 h-3.5 text-stone-600" />
+            <span>原图直接生成图纸</span>
           </button>
         </div>
 

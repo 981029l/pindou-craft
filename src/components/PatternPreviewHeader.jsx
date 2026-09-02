@@ -1,7 +1,7 @@
 import React from 'react';
-import { RefreshCw, Printer, Download, Cloud, Check, SplitSquareVertical } from 'lucide-react';
+import { Printer, Download, Cloud, Check, SplitSquareVertical } from 'lucide-react';
 
-export default function PatternPreviewHeader({
+export default function PatternPreviewHeader({ // # 图纸预览控制头部组件 (零滑动自适应版)
   patternName,
   onPatternNameChange,
   showColorCodes,
@@ -16,95 +16,91 @@ export default function PatternPreviewHeader({
   onExportBom,
 }) {
   return (
-    <div className="flex flex-wrap items-center justify-between gap-3 p-3.5 bg-white border-b border-stone-200 text-xs">
-      {/* 左侧标题与复选开关 */}
-      <div className="flex flex-wrap items-center gap-3">
-        <h2 className="text-sm font-bold text-stone-900">图纸预览</h2>
-
-        {/* 色号标签复选 */}
-        <label className="flex items-center gap-1.5 cursor-pointer text-stone-700 hover:text-stone-900 select-none">
-          <input
-            type="checkbox"
-            checked={showColorCodes}
-            onChange={onToggleColorCodes}
-            className="rounded border-stone-300 text-stone-900 focus:ring-0 accent-stone-900 cursor-pointer"
-          />
-          <span className="font-medium text-xs">色号标签</span>
-        </label>
-
-        {/* 行列编号复选 */}
-        <label className="flex items-center gap-1.5 cursor-pointer text-stone-700 hover:text-stone-900 select-none">
-          <input
-            type="checkbox"
-            checked={showRulers}
-            onChange={onToggleRulers}
-            className="rounded border-stone-300 text-stone-900 focus:ring-0 accent-stone-900 cursor-pointer"
-          />
-          <span className="font-medium text-xs">行列编号</span>
-        </label>
-
-        {/* 卷帘对比复选 */}
-        <label className="flex items-center gap-1.5 cursor-pointer text-stone-700 hover:text-stone-900 select-none">
-          <input
-            type="checkbox"
-            checked={compareMode}
-            onChange={onToggleCompareMode}
-            className="rounded border-stone-300 text-stone-900 focus:ring-0 accent-stone-900 cursor-pointer"
-          />
-          <span className="font-medium text-xs flex items-center gap-1">
-            <SplitSquareVertical className="w-3 h-3 text-amber-500" />
-            卷帘对比
-          </span>
-        </label>
-
+    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 p-2 sm:p-3.5 bg-white border-b border-stone-200 text-xs shrink-0 select-none">
+      {/* 选项与标题区 (移动端自适应满宽，绝无横向滑动) */}
+      <div className="flex items-center justify-between gap-1.5 w-full sm:w-auto">
         {/* 图纸重命名输入框 */}
         <input
           type="text"
           value={patternName}
           onChange={(e) => onPatternNameChange(e.target.value)}
           placeholder="未命名图纸"
-          className="px-2.5 py-1 rounded-lg bg-stone-50 border border-stone-200 text-stone-900 font-medium text-xs focus:outline-none focus:border-stone-900 min-w-[170px]"
+          className="px-2 py-1 rounded-lg bg-stone-50 border border-stone-200 text-stone-900 font-medium text-xs focus:outline-none focus:border-stone-900 flex-1 sm:flex-initial sm:min-w-[140px] sm:max-w-[180px] min-w-0 truncate"
         />
+
+        {/* 视图开关组 (移动端紧凑胶囊按钮) */}
+        <div className="flex items-center gap-1 shrink-0">
+          <button
+            type="button"
+            onClick={onToggleColorCodes}
+            className={`px-1.5 sm:px-2 py-1 rounded-lg text-[11px] font-medium transition-colors border ${
+              showColorCodes
+                ? 'bg-stone-900 text-white border-stone-900 font-bold'
+                : 'bg-stone-50 text-stone-600 border-stone-200 hover:bg-stone-100'
+            }`}
+            title="显示/隐藏色号代码"
+          >
+            色号
+          </button>
+
+          <button
+            type="button"
+            onClick={onToggleRulers}
+            className={`px-1.5 sm:px-2 py-1 rounded-lg text-[11px] font-medium transition-colors border ${
+              showRulers
+                ? 'bg-stone-900 text-white border-stone-900 font-bold'
+                : 'bg-stone-50 text-stone-600 border-stone-200 hover:bg-stone-100'
+            }`}
+            title="显示/隐藏坐标刻度"
+          >
+            刻度
+          </button>
+
+          <button
+            type="button"
+            onClick={onToggleCompareMode}
+            className={`px-1.5 sm:px-2 py-1 rounded-lg text-[11px] font-medium transition-colors border flex items-center gap-0.5 ${
+              compareMode
+                ? 'bg-amber-500 text-white border-amber-500 font-bold'
+                : 'bg-stone-50 text-stone-600 border-stone-200 hover:bg-stone-100'
+            }`}
+            title="开启/关闭原图卷帘对比"
+          >
+            <SplitSquareVertical className="w-3 h-3" />
+            <span>卷帘</span>
+          </button>
+        </div>
       </div>
 
-      {/* 右侧动作按钮栏 (对齐竞品精致按钮风格) */}
-      <div className="flex items-center gap-2">
-        {/* 重置 */}
+      {/* 右侧动作按钮栏 (移动端 2 等分整齐平铺，零滑动) */}
+      <div className="grid grid-cols-2 sm:flex sm:items-center gap-1.5 w-full sm:w-auto">
+
+        {/* 下载 PNG */}
         <button
-          onClick={onReset}
-          className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-stone-50 hover:bg-stone-100 border border-stone-200 text-stone-700 font-medium transition-colors"
-          title="清空或重置画布"
+          onClick={onDownloadPng}
+          className="flex items-center justify-center gap-1 py-1.5 px-2 sm:px-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-medium shadow-xs transition-colors text-xs"
         >
-          <RefreshCw className="w-3.5 h-3.5 text-stone-500" />
-          <span>重置</span>
+          <Download className="w-3.5 h-3.5 shrink-0" />
+          <span className="truncate">下载 PNG</span>
         </button>
 
-        {/* 打印 */}
+        {/* 导出 BOM */}
+        <button
+          onClick={onExportBom}
+          className="flex items-center justify-center gap-1 py-1.5 px-2 sm:px-3 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-medium shadow-xs transition-colors text-xs"
+        >
+          <Cloud className="w-3.5 h-3.5 shrink-0" />
+          <span className="truncate">导出物料</span>
+        </button>
+
+        {/* 打印 (仅在平板/桌面展示) */}
         <button
           onClick={onPrint}
-          className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-stone-50 hover:bg-stone-100 border border-stone-200 text-stone-700 font-medium transition-colors"
+          className="hidden sm:flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-stone-50 hover:bg-stone-100 border border-stone-200 text-stone-700 font-medium transition-colors text-xs shrink-0"
           title="直接调用系统打印机打印"
         >
           <Printer className="w-3.5 h-3.5 text-stone-500" />
           <span>打印</span>
-        </button>
-
-        {/* 下载 PNG (对齐竞品蓝色主按钮) */}
-        <button
-          onClick={onDownloadPng}
-          className="flex items-center gap-1 px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-medium shadow-sm transition-colors"
-        >
-          <Download className="w-3.5 h-3.5" />
-          <span>下载 PNG</span>
-        </button>
-
-        {/* 保存到云端 / 导出 BOM (对齐竞品琥珀色按钮) */}
-        <button
-          onClick={onExportBom}
-          className="flex items-center gap-1 px-3.5 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-medium shadow-sm transition-colors"
-        >
-          <Cloud className="w-3.5 h-3.5" />
-          <span>导出物料 BOM</span>
         </button>
       </div>
     </div>

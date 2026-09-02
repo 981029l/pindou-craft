@@ -17,6 +17,18 @@
   }
 }
 
+/* 全局无痕滚动条规则 */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
 /* 优雅极简白净滚动条 */
 .custom-scrollbar::-webkit-scrollbar {
   width: 5px;

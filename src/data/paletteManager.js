@@ -124,8 +124,10 @@ export const BRAND_PALETTES = {
 
 export function getPaletteDataByBrand(brand = 'MARD') {
   const b = (brand || 'MARD').toUpperCase();
+  const pal = BRAND_PALETTES[b] || BRAND_PALETTES.MARD;
   return {
-    palette: BRAND_PALETTES[b] || BRAND_PALETTES.MARD,
+    palette: pal,
+    list: pal, // # 兼容 list 与 palette 属性别名
     map: BRAND_MAPS[b] || BRAND_MAPS.MARD,
   };
 }
