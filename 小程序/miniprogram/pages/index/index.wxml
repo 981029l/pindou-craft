@@ -1,0 +1,293 @@
+<!-- # 拼豆工坊小程序一体化沉浸式主页 - Lucide Icons 矢量加持 -->
+<view class="workbench-container">
+  <!-- # 0. 高定多巴胺工坊沉浸式开屏启动动效 (首次冷启动展示 1.2s，支持点击快进) -->
+  <view wx:if="{{showSplash}}" class="splash-screen {{splashHiding ? 'fade-out' : ''}}" bindtap="onDismissSplash" catchtouchmove="preventBubble">
+    <view class="splash-backdrop-glow"></view>
+    <view class="splash-center-stage">
+      <!-- 多巴胺灵动拼豆微珠聚合 -->
+      <view class="splash-beads-orbit">
+        <view class="splash-bead bead-amber"></view>
+        <view class="splash-bead bead-pink"></view>
+        <view class="splash-bead bead-emerald"></view>
+        <view class="splash-bead bead-sky"></view>
+        <view class="splash-bead bead-purple"></view>
+      </view>
+
+      <!-- 品牌名片徽标 -->
+      <view class="splash-brand-badge">
+        <text class="icon-lucide icon-sparkles" style="color: #D97706; width: 26rpx; height: 26rpx; margin-right: 8rpx;"></text>
+        <text class="splash-badge-txt">PINDOU ATELIER</text>
+      </view>
+
+      <!-- 品牌主标题 -->
+      <text class="splash-title">智能拼豆图纸工坊</text>
+      <text class="splash-subtitle">实体级 CIEDE2000 色差 · 221 色卡直出</text>
+
+      <!-- 底部工坊微标语 -->
+      <view class="splash-footer-pill">
+        <text>Crafted for Bead Artisans · 毫秒级分色量化</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- # 顶部品牌徽章 -->
+  <view class="atelier-header">
+    <view class="header-main">
+      <view class="badge-row">
+        <text class="icon-lucide icon-sparkles" style="color: #D97706; width: 24rpx; height: 24rpx; margin-right: 8rpx;"></text>
+        <text class="brand-badge">PINDOU ATELIER</text>
+      </view>
+      <text class="brand-title">智能拼豆图纸工坊</text>
+    </view>
+    <view class="header-tech-deck">
+      <view class="tech-chip">
+        <text class="tech-dot"></text>
+        <text class="tech-text">CIEDE2000 色差</text>
+      </view>
+      <view class="tech-chip">
+        <text class="tech-dot amber"></text>
+        <text class="tech-text">221 色卡直出</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- # 离屏图像采样 Canvas -->
+  <canvas type="2d" id="offscreenCanvas" class="offscreen-canvas"></canvas>
+
+  <!-- # 模块 1: 原图载入与规格配置卡片 -->
+  <view class="artisan-card config-card">
+    <view class="card-headline">
+      <view class="headline-left">
+        <text class="icon-lucide icon-image headline-lucide-icon" style="color: #B45309; width: 30rpx; height: 30rpx;"></text>
+        <text class="headline-title">原图载入与画幅规格</text>
+      </view>
+      <view class="headline-status-pill {{currentImageSrc ? 'ready' : ''}}">
+        <text class="status-dot"></text>
+        <text class="status-txt">{{currentImageSrc ? '素材已就绪' : '待选取素材'}}</text>
+      </view>
+    </view>
+
+    <!-- # 拍立得式原图微光展台 -->
+    <view class="polaroid-uploader {{currentImageSrc ? 'has-img' : ''}}" bindtap="onChooseImage" hover-class="polaroid-hover">
+      <block wx:if="{{currentImageSrc}}">
+        <image src="{{currentImageSrc}}" mode="aspectFit" class="polaroid-preview-img"></image>
+        <view class="polaroid-change-badge">
+          <text class="icon-lucide icon-camera" style="width: 20rpx; height: 20rpx; color: #FFFFFF; margin-right: 6rpx;"></text>
+          <text>点击更换原图</text>
+        </view>
+      </block>
+      <view wx:else class="polaroid-empty">
+        <view class="empty-icon-orbit">
+          <view class="orbit-halo"></view>
+          <text class="icon-lucide icon-camera" style="width: 44rpx; height: 44rpx; color: #B45309; position: relative; z-index: 2;"></text>
+        </view>
+        <text class="empty-primary-text">点击选取相册照片 / 拍摄素材</text>
+        <text class="empty-sub-text">支持任意动漫、头像、萌宠与插画 · 智能等比自适应</text>
+        <view class="empty-tag-pill">
+          <text class="icon-lucide icon-sparkles" style="width: 20rpx; height: 20rpx; color: #D97706; margin-right: 6rpx;"></text>
+          <text>CIEDE2000 毫秒级分色量化</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- # 核心参数设置排版 (舒展分层设计) -->
+    <view class="settings-deck">
+      <!-- # 色卡品牌选择行 -->
+      <view class="setting-row-brand">
+        <view class="setting-label-col">
+          <text class="setting-title">色卡品牌体系</text>
+          <text class="setting-caption">工业级标准色值校准</text>
+        </view>
+        <picker bindchange="onBrandChange" value="{{brandIndex}}" range="{{brandOptions}}">
+          <view class="brand-select-pill" hover-class="brand-pill-hover">
+            <text class="brand-dot"></text>
+            <text class="brand-val">{{paletteBrand}} 官方标准色</text>
+            <text class="icon-lucide icon-chevron-down" style="width: 22rpx; height: 22rpx; color: #A8A29E;"></text>
+          </view>
+        </picker>
+      </view>
+
+      <!-- # 智能纯色背景去底开闭 (泛洪算法保护角色内部) -->
+      <view class="setting-row-brand">
+        <view class="setting-label-col">
+          <text class="setting-title">智能纯色去底</text>
+          <text class="setting-caption">连通域边缘泛洪，剔除外围背景保留主体</text>
+        </view>
+        <view class="bg-remove-toggle {{removeBackground ? 'active' : ''}}" bindtap="onToggleRemoveBg">
+          <text class="icon-lucide icon-wand" style="width: 22rpx; height: 22rpx; margin-right: 8rpx; color: {{removeBackground ? '#047857' : '#78716C'}};"></text>
+          <text>{{removeBackground ? '已开启去底' : '保留背景'}}</text>
+        </view>
+      </view>
+
+      <!-- # 颗粒清晰度基准档位 (等宽黄金比例分段卡) -->
+      <view class="setting-col-tiers">
+        <view class="setting-label-col mb-14">
+          <text class="setting-title">清晰度基准规格</text>
+          <text class="setting-caption">依据原图自然高宽比，等比智能计算网格尺寸</text>
+        </view>
+        <view class="size-segmented-row">
+          <view class="size-segment-card {{selectedBaseSize === 50 ? 'selected' : ''}}" bindtap="onSelectSize" data-size="50" hover-class="segment-hover">
+            <view class="segment-badge-row">
+              <text class="segment-tier-badge">精细</text>
+              <text class="icon-lucide icon-check segment-check-icon" wx:if="{{selectedBaseSize === 50}}"></text>
+            </view>
+            <text class="segment-size-title">50 档</text>
+            <text class="segment-hint">小巧速拼</text>
+          </view>
+          <view class="size-segment-card {{selectedBaseSize === 80 ? 'selected' : ''}}" bindtap="onSelectSize" data-size="80" hover-class="segment-hover">
+            <view class="segment-badge-row">
+              <text class="segment-tier-badge popular">超清</text>
+              <text class="icon-lucide icon-check segment-check-icon" wx:if="{{selectedBaseSize === 80}}"></text>
+            </view>
+            <text class="segment-size-title">80 档</text>
+            <text class="segment-hint">细节丰富</text>
+          </view>
+          <view class="size-segment-card {{selectedBaseSize === 140 ? 'selected' : ''}}" bindtap="onSelectSize" data-size="140" hover-class="segment-hover">
+            <view class="segment-badge-row">
+              <text class="segment-tier-badge master">大师</text>
+              <text class="icon-lucide icon-check segment-check-icon" wx:if="{{selectedBaseSize === 140}}"></text>
+            </view>
+            <text class="segment-size-title">140 档</text>
+            <text class="segment-hint">巨幅臻藏</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- # 主生成按键 (舒展微光悬浮长胶囊，留白充裕不贴底) -->
+    <view class="generate-btn-wrap">
+      <button class="btn-glow-primary btn-generate-atelier" bindtap="onGeneratePattern" loading="{{isGenerating}}" hover-class="btn-generate-hover">
+        <text class="icon-lucide icon-wand" style="color: #FFFFFF; margin-right: 14rpx; width: 34rpx; height: 34rpx;"></text>
+        <text>{{isGenerating ? 'AI 正在极速量化图纸...' : (currentImageSrc ? '重新量化生成图纸' : '选取素材并量化图纸')}}</text>
+      </button>
+    </view>
+  </view>
+
+  <!-- # 模块 2: 实体级 Canvas 2D 画布工作台 -->
+  <view class="artisan-card canvas-card">
+    <view class="card-headline">
+      <view class="headline-left">
+        <text class="icon-lucide icon-grid headline-lucide-icon" style="color: #B45309;"></text>
+        <text class="headline-title">拼豆图纸工作台</text>
+      </view>
+      <view class="headline-stats">
+        <text class="stat-badge">{{gridWidth}}×{{gridHeight}} 格</text>
+        <text class="stat-badge">{{paletteBrand}}</text>
+      </view>
+    </view>
+
+    <!-- # 原生 Canvas 2D 交互编辑器 (弹窗时隐藏原生组件防止层级穿透) -->
+    <canvas-editor
+      id="editor"
+      hidden="{{showSaveModal}}"
+      gridData="{{gridData}}"
+      paletteBrand="{{paletteBrand}}"
+      selectedColorCode="{{selectedColorCode}}"
+      highlightColorCode="{{highlightColorCode}}"
+      bindselectcolor="onColorSelected"
+      bindgridchange="onGridChanged"
+      bindopenpalette="onOpenPalette"
+    ></canvas-editor>
+
+    <!-- # 竞品同款双拼用料矩阵 -->
+    <bom-matrix
+      gridData="{{gridData}}"
+      paletteBrand="{{paletteBrand}}"
+      highlightCode="{{highlightColorCode}}"
+      bindtogglehighlight="onToggleHighlight"
+      bindselectcolor="onColorSelected"
+    ></bom-matrix>
+  </view>
+
+  <!-- # 模块 3: 底部操作快捷坞 -->
+  <view class="dock-actions-row">
+    <button class="btn-dock-pill dock-left" bindtap="onSaveToCloud" loading="{{isSavingCloud}}">
+      <text class="icon-lucide icon-cloud" style="color: #0284C7; margin-right: 10rpx; width: 30rpx; height: 30rpx;"></text>
+      <text>存入云端作品集</text>
+    </button>
+    <button class="btn-dock-pill dock-right" bindtap="onGoToExport">
+      <text class="icon-lucide icon-download" style="color: #D97706; margin-right: 10rpx; width: 30rpx; height: 30rpx;"></text>
+      <text>导出 A4 图纸与 BOM</text>
+    </button>
+  </view>
+
+  <!-- # 快捷选色抽屉 -->
+  <quick-palette
+    visible="{{showQuickPalette}}"
+    paletteBrand="{{paletteBrand}}"
+    selectedColorCode="{{selectedColorCode}}"
+    gridData="{{gridData}}"
+    bindselectcolor="onColorSelected"
+    bindclose="onClosePalette"
+  ></quick-palette>
+
+  <!-- # 模块 5: 居中手作凭证式命名与保存弹窗 -->
+  <view wx:if="{{showSaveModal}}" class="save-modal-mask" catchtouchmove="preventBubble" bindtap="onCloseSaveModal">
+    <view class="save-dialog-card" catchtap="preventBubble">
+      <!-- 弹窗顶栏 -->
+      <view class="save-dialog-header">
+        <view class="header-badge-row">
+          <text class="icon-lucide icon-sparkles" style="color: #F59E0B; width: 28rpx; height: 28rpx; margin-right: 8rpx;"></text>
+          <text class="save-dialog-title">存入云端手作集</text>
+        </view>
+        <view class="save-close-pill" catchtap="onCloseSaveModal">
+          <text class="icon-lucide icon-x" style="width: 22rpx; height: 22rpx; color: #78716C;"></text>
+        </view>
+      </view>
+
+      <!-- 拼豆作品微缩快照预览框 -->
+      <view class="save-preview-frame">
+        <image wx:if="{{saveTempPreviewUrl}}" class="save-preview-img" src="{{saveTempPreviewUrl}}" mode="aspectFit"></image>
+        <view wx:else class="save-preview-placeholder">
+          <text class="icon-lucide icon-grid" style="color: #F59E0B; width: 56rpx; height: 56rpx;"></text>
+        </view>
+        <view class="save-spec-tag">
+          <text>{{gridWidth}} × {{gridHeight}} 格 · {{paletteBrand}} 标准色</text>
+        </view>
+      </view>
+
+      <!-- 作品名称输入区 -->
+      <view class="save-input-group">
+        <view class="save-label-row">
+          <text class="save-field-label">作品名称</text>
+          <text class="save-counter-label">{{patternNameInput.length || 0}}/24</text>
+        </view>
+        <view class="save-input-wrap">
+          <input 
+            class="save-name-input" 
+            placeholder="为您的拼豆创作命名" 
+            value="{{patternNameInput}}" 
+            bindinput="onPatternNameInput"
+            maxlength="24"
+          />
+          <view wx:if="{{patternNameInput}}" class="save-clear-btn" catchtap="onClearPatternName">
+            <text class="icon-lucide icon-x" style="width: 20rpx; height: 20rpx; color: #A8A29E;"></text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 社区公开切换开关行 (原生防冲突无锁死) -->
+      <view class="save-toggle-row">
+        <view class="toggle-text-col">
+          <text class="toggle-title">同步公开至灵感社区</text>
+          <text class="toggle-desc">开启后其他玩家可在广场围观并开拼</text>
+        </view>
+        <switch 
+          class="save-switch-control" 
+          checked="{{isPublishCommunity}}" 
+          color="#F59E0B" 
+          bindchange="onSwitchPublishCommunity" 
+        />
+      </view>
+
+      <!-- 底部动作条 (纯净轻奢按键，杜绝粗糙菊花圈) -->
+      <button class="btn-confirm-save" bindtap="onConfirmSaveToCloud">
+        <text class="icon-lucide icon-cloud" style="color: #FFFFFF; width: 28rpx; height: 28rpx; margin-right: 10rpx;"></text>
+        <text>确认存入云端</text>
+      </button>
+      <view class="save-cancel-row" catchtap="onCloseSaveModal">
+        <text class="save-cancel-text">返回继续编辑</text>
+      </view>
+    </view>
+  </view>
+</view>

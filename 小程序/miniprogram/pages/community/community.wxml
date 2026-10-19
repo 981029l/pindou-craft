@@ -1,0 +1,171 @@
+<!-- # 拼豆社区广场页面 - 画廊大图卡片流 -->
+<view class="community-container">
+  <!-- # 顶部标头与排序切换 -->
+  <view class="community-header">
+    <view class="header-main">
+      <view class="badge-row">
+        <text class="icon-lucide icon-sparkles" style="color: #F59E0B; margin-right: 6rpx;"></text>
+        <text class="brand-badge">Official Gallery</text>
+      </view>
+      <text class="brand-title">拼豆精选图库</text>
+    </view>
+    
+    <!-- # 排序筛选胶囊 -->
+    <view class="sort-pills">
+      <view class="sort-pill {{sortBy === 'likes' ? 'active' : ''}}" bindtap="onSwitchSort" data-sort="likes">
+        <text>热门推荐</text>
+      </view>
+      <view class="sort-pill {{sortBy === 'createTime' ? 'active' : ''}}" bindtap="onSwitchSort" data-sort="createTime">
+        <text>最新上架</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- # 搜索栏与分类题材筛选舱 -->
+  <view class="community-search-section">
+    <!-- 搜索输入框 -->
+    <view class="search-bar">
+      <text class="icon-lucide icon-search search-icon" style="color: #A8A29E; width: 30rpx; height: 30rpx; margin-left: 18rpx;"></text>
+      <input 
+        class="search-input" 
+        placeholder="搜索图纸名称、分类或标签..." 
+        placeholder-class="search-placeholder"
+        value="{{searchKeyword}}"
+        bindinput="onSearchInput"
+        bindconfirm="onSearchConfirm"
+      />
+      <view wx:if="{{searchKeyword}}" class="search-clear-btn" bindtap="onClearSearch">
+        <text class="icon-lucide icon-x" style="color: #78716C; width: 26rpx; height: 26rpx;"></text>
+      </view>
+    </view>
+
+    <!-- 热门题材分类标签滑动坞 -->
+    <scroll-view scroll-x class="category-scroll" enable-flex show-scrollbar="{{false}}">
+      <view class="category-chip {{currentCategory === 'all' ? 'active' : ''}}" bindtap="onSelectCategory" data-cat="all">
+        <text>全部灵感 ({{allPatterns.length}})</text>
+      </view>
+      <view class="category-chip {{currentCategory === 'anime' ? 'active' : ''}}" bindtap="onSelectCategory" data-cat="anime">
+        <text>二次元动漫</text>
+      </view>
+      <view class="category-chip {{currentCategory === 'pets' ? 'active' : ''}}" bindtap="onSelectCategory" data-cat="pets">
+        <text>萌宠动物</text>
+      </view>
+      <view class="category-chip {{currentCategory === 'game' ? 'active' : ''}}" bindtap="onSelectCategory" data-cat="game">
+        <text>游戏像素</text>
+      </view>
+      <view class="category-chip {{currentCategory === 'festival' ? 'active' : ''}}" bindtap="onSelectCategory" data-cat="festival">
+        <text>节日物语</text>
+      </view>
+      <view class="category-chip {{currentCategory === 'mini' ? 'active' : ''}}" bindtap="onSelectCategory" data-cat="mini">
+        <text>迷你小件</text>
+      </view>
+    </scroll-view>
+  </view>
+
+  <!-- # 核心流体双轨瀑布流 (一左一右，不规则错落) -->
+  <view wx:if="{{displayPatternList.length > 0}}" class="waterfall-container">
+    <!-- # 左轨道 -->
+    <view class="waterfall-column">
+      <view 
+        wx:for="{{leftList}}" 
+        wx:key="_id" 
+        class="artisan-card waterfall-card"
+        bindtap="onGoToDetail"
+        data-id="{{item._id}}"
+      >
+        <!-- # 卡片置顶效果图 -->
+        <view class="card-thumb-stage">
+          <image 
+            wx:if="{{item.displayThumb || item.previewUrl}}" 
+            class="card-thumb-img" 
+            src="{{item.displayThumb || item.previewUrl}}" 
+            mode="widthFix"
+            lazy-load
+          ></image>
+          <view wx:else class="card-thumb-fallback">
+            <text class="icon-lucide icon-palette" style="color: #F59E0B; width: 44rpx; height: 44rpx;"></text>
+          </view>
+          <view wx:if="{{item.isOfficial}}" class="card-official-pill">
+            <text>官方精选</text>
+          </view>
+          <view class="card-size-pill">
+            <text>{{item.displaySize}}</text>
+          </view>
+        </view>
+
+        <!-- # 下方紧凑信息区 -->
+        <view class="card-content-area">
+          <text class="card-pattern-title">{{item.displayName}}</text>
+          <view class="card-footer-row">
+            <view class="card-author-info">
+              <view class="card-avatar-dot"></view>
+              <text class="card-author-name">{{item.authorName || '拼豆创作者'}}</text>
+            </view>
+            <view class="card-like-pill {{item.isLiked ? 'liked' : ''}}" catchtap="onLikePattern" data-id="{{item._id}}">
+              <text class="icon-lucide icon-sparkles" style="width: 22rpx; height: 22rpx; margin-right: 4rpx;"></text>
+              <text>{{item.likes || 0}}</text>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- # 右轨道 -->
+    <view class="waterfall-column">
+      <view 
+        wx:for="{{rightList}}" 
+        wx:key="_id" 
+        class="artisan-card waterfall-card"
+        bindtap="onGoToDetail"
+        data-id="{{item._id}}"
+      >
+        <!-- # 卡片置顶效果图 -->
+        <view class="card-thumb-stage">
+          <image 
+            wx:if="{{item.displayThumb || item.previewUrl}}" 
+            class="card-thumb-img" 
+            src="{{item.displayThumb || item.previewUrl}}" 
+            mode="widthFix"
+            lazy-load
+          ></image>
+          <view wx:else class="card-thumb-fallback">
+            <text class="icon-lucide icon-palette" style="color: #F59E0B; width: 44rpx; height: 44rpx;"></text>
+          </view>
+          <view wx:if="{{item.isOfficial}}" class="card-official-pill">
+            <text>官方精选</text>
+          </view>
+          <view class="card-size-pill">
+            <text>{{item.displaySize}}</text>
+          </view>
+        </view>
+
+        <!-- # 下方紧凑信息区 -->
+        <view class="card-content-area">
+          <text class="card-pattern-title">{{item.displayName}}</text>
+          <view class="card-footer-row">
+            <view class="card-author-info">
+              <view class="card-avatar-dot"></view>
+              <text class="card-author-name">{{item.authorName || '拼豆创作者'}}</text>
+            </view>
+            <view class="card-like-pill {{item.isLiked ? 'liked' : ''}}" catchtap="onLikePattern" data-id="{{item._id}}">
+              <text class="icon-lucide icon-sparkles" style="width: 22rpx; height: 22rpx; margin-right: 4rpx;"></text>
+              <text>{{item.likes || 0}}</text>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- # 空状态 (仅在主动输入无结果搜索词时兜底展示) -->
+  <view wx:else class="empty-state">
+    <view class="empty-icon-circle">
+      <text class="icon-lucide icon-search" style="width: 56rpx; height: 56rpx; color: #D97706;"></text>
+    </view>
+    <text class="empty-title">未搜索到相关图纸</text>
+    <text class="empty-desc">换个关键词或分类试试看，或者在工作台中自己创作一幅吧！</text>
+    <view class="empty-reset-btn" bindtap="onResetFilter">
+      <text>重置搜索与分类</text>
+    </view>
+  </view>
+</view>

@@ -1,0 +1,288 @@
+/* # 原生 Canvas 2D 交互编辑器 - 多巴胺手作质感 */
+@import "../../styles/icons.wxss";
+
+.editor-container {
+  display: flex;
+  flex-direction: column;
+  background: #FFFFFF;
+  border-radius: 28rpx;
+  overflow: hidden;
+  border: 1rpx solid #E7E5E4;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.03);
+}
+
+/* # 1. 顶部工具栏 (Procreate / Figma 极简图标坞) */
+.toolbar-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12rpx 18rpx;
+  border-bottom: 1rpx solid #F5F5F4;
+  background: #FAFAF9;
+}
+
+.tools-left {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+
+.tool-btn {
+  width: 58rpx;
+  height: 58rpx;
+  border-radius: 14rpx;
+  background: #FFFFFF;
+  border: 1rpx solid #E7E5E4;
+  color: #57534E;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2rpx 6rpx rgba(0, 0, 0, 0.02);
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.tool-btn .icon-lucide {
+  width: 30rpx;
+  height: 30rpx;
+}
+
+.tool-btn-hover {
+  background: #F5F5F4;
+  transform: scale(0.96);
+}
+
+.tool-btn.active {
+  background: #1C1917;
+  color: #FFFFFF;
+  border-color: #1C1917;
+  box-shadow: 0 4rpx 14rpx rgba(28, 25, 23, 0.22);
+  transform: scale(1.04);
+}
+
+.tool-btn.active .icon-lucide {
+  color: #F59E0B;
+}
+
+.tool-divider {
+  width: 1rpx;
+  height: 36rpx;
+  background: #E7E5E4;
+  margin: 0 4rpx;
+}
+
+.tools-right {
+  display: flex;
+  align-items: center;
+  gap: 10rpx;
+}
+
+.action-btn {
+  width: 58rpx;
+  height: 58rpx;
+  border-radius: 14rpx;
+  background: #FFFFFF;
+  border: 1rpx solid #E7E5E4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #57534E;
+  box-shadow: 0 2rpx 6rpx rgba(0, 0, 0, 0.02);
+  transition: all 0.15s;
+}
+
+.action-btn .icon-lucide {
+  width: 28rpx;
+  height: 28rpx;
+}
+
+.action-btn.disabled {
+  opacity: 0.25;
+}
+
+/* # 2. 画布视口区 (严格 520rpx 约束与硬件隔离) */
+.canvas-viewport {
+  position: relative;
+  width: 100%;
+  height: 520rpx;
+  background: #ECEAE5;
+  overflow: hidden;
+  contain: paint;
+  clip-path: inset(0 round 20rpx);
+  -webkit-clip-path: inset(0 round 20rpx);
+  isolation: isolate;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  z-index: 1;
+}
+
+.native-canvas {
+  width: 100%;
+  height: 520rpx;
+  display: block;
+  contain: strict;
+}
+
+.native-canvas[hidden] {
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+/* # 2. 独立全宽呼吸指示微舱 (宽度 100% 充裕，平滑滑出/淡出) */
+.probe-subbar {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  background: #1C1917;
+  transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+.probe-subbar.active {
+  max-height: 64rpx;
+  opacity: 1;
+  padding: 12rpx 20rpx;
+  border-bottom: 1rpx solid rgba(255, 255, 255, 0.08);
+}
+
+.probe-subbar-content {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+
+.probe-indicator-dot {
+  width: 12rpx;
+  height: 12rpx;
+  border-radius: 999rpx;
+  background: #10B981;
+  box-shadow: 0 0 10rpx #10B981;
+}
+
+.probe-coord {
+  font-size: 22rpx;
+  font-family: monospace;
+  font-weight: 800;
+  color: #FFFFFF;
+}
+
+.probe-sub-sep {
+  width: 1rpx;
+  height: 20rpx;
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.probe-color-pill {
+  font-size: 20rpx;
+  font-family: monospace;
+  font-weight: 900;
+  padding: 2rpx 10rpx;
+  border-radius: 6rpx;
+}
+
+.probe-color-name {
+  font-size: 22rpx;
+  font-weight: 800;
+  color: #FEF3C7;
+}
+
+/* # 3. 画布独立底部控制条 */
+.editor-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14rpx 18rpx;
+  border-top: 1rpx solid #F5F5F4;
+  background: #FAFAF9;
+  gap: 10rpx;
+}
+
+/* # 画笔胶囊 */
+.brush-pill {
+  display: flex;
+  align-items: center;
+  gap: 6rpx;
+  padding: 8rpx 18rpx;
+  border-radius: 999rpx;
+  font-family: monospace;
+  font-size: 22rpx;
+  font-weight: bold;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.08);
+  max-width: 260rpx;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.brush-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.brush-arrow {
+  font-size: 18rpx;
+  opacity: 0.8;
+  margin-left: 2rpx;
+}
+
+/* # 缩放控制器 */
+.zoom-controls-bar {
+  display: flex;
+  align-items: center;
+  gap: 6rpx;
+  background: #FFFFFF;
+  padding: 4rpx 10rpx;
+  border-radius: 999rpx;
+  box-shadow: 0 2rpx 6rpx rgba(0, 0, 0, 0.04);
+  border: 1rpx solid #E7E5E4;
+}
+
+.zoom-btn {
+  width: 36rpx;
+  height: 36rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24rpx;
+  font-weight: bold;
+  color: #1C1917;
+}
+
+.zoom-ratio {
+  font-size: 20rpx;
+  font-family: monospace;
+  font-weight: bold;
+  color: #78716C;
+  min-width: 52rpx;
+  text-align: center;
+}
+
+.zoom-preset.fit {
+  background: #1C1917;
+  color: #FFFFFF;
+  padding: 4rpx 12rpx;
+  border-radius: 8rpx;
+  font-size: 20rpx;
+  font-weight: bold;
+}
+
+/* # 质感切换 */
+.bead-style-toggle {
+  background: #FFFFFF;
+  border: 1rpx solid #E7E5E4;
+  padding: 8rpx 16rpx;
+  border-radius: 12rpx;
+  box-shadow: 0 2rpx 6rpx rgba(0, 0, 0, 0.02);
+  flex-shrink: 0;
+}
+
+.style-label {
+  font-size: 22rpx;
+  font-weight: bold;
+  color: #44403C;
+}

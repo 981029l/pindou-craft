@@ -1,0 +1,9 @@
+{
+  "name": "getPatternList",
+  "version": "1.0.0",
+  "description": "获取当前用户的拼豆图纸列表",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "~2.6.3"
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "navigationBarTitleText": "PinDou 拼豆工坊",
+  "usingComponents": {
+    "canvas-editor": "../../components/canvas-editor/canvas-editor",
+    "bom-matrix": "../../components/bom-matrix/bom-matrix",
+    "quick-palette": "../../components/quick-palette/quick-palette"
+  }
+}

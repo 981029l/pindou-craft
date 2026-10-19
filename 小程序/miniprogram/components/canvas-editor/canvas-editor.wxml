@@ -1,0 +1,83 @@
+<!-- # 原生 Canvas 2D 交互编辑器 - Procreate/Figma 极简矢量图标坞 -->
+<view class="editor-container">
+  <!-- # 1. 顶部工具栏 (等宽方键 · 极简矢量) -->
+  <view class="toolbar-wrap">
+    <view class="tools-left">
+      <view class="tool-btn {{currentTool === 'pencil' ? 'active' : ''}}" bindtap="onSelectTool" data-tool="pencil" hover-class="tool-btn-hover">
+        <text class="icon-lucide icon-pencil"></text>
+      </view>
+      <view class="tool-btn {{currentTool === 'bucket' ? 'active' : ''}}" bindtap="onSelectTool" data-tool="bucket" hover-class="tool-btn-hover">
+        <text class="icon-lucide icon-bucket"></text>
+      </view>
+      <view class="tool-btn {{currentTool === 'picker' ? 'active' : ''}}" bindtap="onSelectTool" data-tool="picker" hover-class="tool-btn-hover">
+        <text class="icon-lucide icon-pipette"></text>
+      </view>
+      <view class="tool-btn {{currentTool === 'eraser' ? 'active' : ''}}" bindtap="onSelectTool" data-tool="eraser" hover-class="tool-btn-hover">
+        <text class="icon-lucide icon-eraser"></text>
+      </view>
+      <view class="tool-btn {{currentTool === 'hand' ? 'active' : ''}}" bindtap="onSelectTool" data-tool="hand" hover-class="tool-btn-hover">
+        <text class="icon-lucide icon-hand"></text>
+      </view>
+    </view>
+
+    <!-- # 竖向极简分割线 (常驻，恢复工具栏黄金比例) -->
+    <view class="tool-divider"></view>
+
+    <view class="tools-right">
+      <view class="action-btn {{canUndo ? '' : 'disabled'}}" bindtap="onUndo" hover-class="tool-btn-hover">
+        <text class="icon-lucide icon-undo"></text>
+      </view>
+      <view class="action-btn {{canRedo ? '' : 'disabled'}}" bindtap="onRedo" hover-class="tool-btn-hover">
+        <text class="icon-lucide icon-redo"></text>
+      </view>
+    </view>
+  </view>
+
+  <!-- # 2. 独立全宽呼吸指示微舱 (宽度 100% 充裕，坐标与中文色名舒展完整，永不溢出，离手 1.5s 平滑隐退) -->
+  <view class="probe-subbar {{hoverProbe ? 'active' : ''}}">
+    <view class="probe-subbar-content" wx:if="{{hoverProbe}}">
+      <view class="probe-indicator-dot"></view>
+      <text class="probe-coord">坐标 ({{hoverProbe.x}}, {{hoverProbe.y}})</text>
+      <view class="probe-sub-sep"></view>
+      <text class="probe-color-pill" style="background-color: {{hoverProbe.colorHex || '#1C1917'}}; color: {{hoverProbe.textColor || '#FFFFFF'}};">{{hoverProbe.code}}</text>
+      <text class="probe-color-name">{{hoverProbe.name_zh}}</text>
+    </view>
+  </view>
+
+  <!-- # 3. 主画布视口区 (纯净 0 遮挡，彻底杜绝原生组件层级穿透) -->
+  <view class="canvas-viewport" id="viewport">
+    <canvas 
+      type="2d" 
+      id="beadCanvas" 
+      class="native-canvas"
+      hidden="{{hidden}}"
+      bindtouchstart="onTouchStart"
+      bindtouchmove="onTouchMove"
+      bindtouchend="onTouchEnd"
+      bindtouchcancel="onTouchEnd"
+    ></canvas>
+  </view>
+
+  <!-- # 3. 画布独立底部控制条: 选色 + 缩放控制 + 质感切换 -->
+  <view class="editor-footer">
+    <!-- # 左侧: 当前画笔快捷选色胶囊 -->
+    <view class="brush-pill" bindtap="onOpenQuickPalette" style="background-color: {{activeColorHex}}; color: {{activeColorTextColor}};">
+      <text class="icon-lucide icon-palette" style="margin-right: 6rpx; width: 26rpx; height: 26rpx;"></text>
+      <text class="brush-text">{{selectedColorCode}} · {{activeColorName}}</text>
+      <text class="icon-lucide icon-chevron-down" style="width: 20rpx; height: 20rpx; opacity: 0.8; margin-left: 2rpx;"></text>
+    </view>
+
+    <!-- # 中间: 缩放控制器 -->
+    <view class="zoom-controls-bar">
+      <view class="zoom-btn" bindtap="onZoomOut"><text>-</text></view>
+      <view class="zoom-ratio"><text>{{zoomPercent}}%</text></view>
+      <view class="zoom-btn" bindtap="onZoomIn"><text>+</text></view>
+      <view class="zoom-preset fit" bindtap="onFitViewport"><text>铺满</text></view>
+    </view>
+
+    <!-- # 右侧: 质感切换 -->
+    <view class="bead-style-toggle" bindtap="onToggleBeadStyle">
+      <text class="style-label">{{beadStyle === 'glossy' ? '微珠' : '像素'}}</text>
+    </view>
+  </view>
+</view>

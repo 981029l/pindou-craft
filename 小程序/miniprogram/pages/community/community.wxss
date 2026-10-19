@@ -1,0 +1,339 @@
+/* # 拼豆社区广场样式 - 画廊大图手作轻奢 */
+@import "../../styles/icons.wxss";
+
+.community-container {
+  padding: 24rpx 28rpx calc(40rpx + env(safe-area-inset-bottom));
+}
+
+.community-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 28rpx;
+  padding: 0 4rpx;
+}
+
+.header-main {
+  display: flex;
+  flex-direction: column;
+}
+
+.badge-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 4rpx;
+}
+
+.brand-badge {
+  font-size: 20rpx;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1.5rpx;
+  color: #D97706;
+}
+
+.brand-title {
+  font-size: 38rpx;
+  font-weight: 900;
+  color: #1C1917;
+  letter-spacing: -0.5rpx;
+}
+
+/* # 排序选择胶囊 */
+.sort-pills {
+  display: flex;
+  background: #E7E5E4;
+  padding: 6rpx;
+  border-radius: 999rpx;
+  gap: 4rpx;
+}
+
+.sort-pill {
+  padding: 8rpx 24rpx;
+  border-radius: 999rpx;
+  font-size: 22rpx;
+  font-weight: 700;
+  color: #78716C;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sort-pill.active {
+  background: #1C1917;
+  color: #FFFFFF;
+  box-shadow: 0 2rpx 8rpx rgba(28, 25, 23, 0.15);
+}
+
+/* # 搜索栏与分类题材筛选舱 */
+.community-search-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+  margin-bottom: 24rpx;
+}
+
+.search-bar {
+  display: flex;
+  align-items: center;
+  background: #FFFFFF;
+  border: 1rpx solid #E7E5E4;
+  border-radius: 999rpx;
+  height: 72rpx;
+  box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.02);
+  padding: 0 12rpx;
+}
+
+.search-icon {
+  flex-shrink: 0;
+}
+
+.search-input {
+  flex: 1;
+  font-size: 24rpx;
+  color: #1C1917;
+  padding: 0 14rpx;
+  height: 100%;
+}
+
+.search-placeholder {
+  color: #A8A29E;
+  font-size: 24rpx;
+}
+
+.search-clear-btn {
+  padding: 10rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* # 热门题材分类标签滑动坞 */
+.category-scroll {
+  white-space: nowrap;
+  width: 100%;
+  display: flex;
+  gap: 12rpx;
+}
+
+.category-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 10rpx 24rpx;
+  border-radius: 999rpx;
+  background: #FFFFFF;
+  border: 1rpx solid #E7E5E4;
+  font-size: 22rpx;
+  font-weight: 700;
+  color: #78716C;
+  box-shadow: 0 2rpx 6rpx rgba(0, 0, 0, 0.02);
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+.category-chip.active {
+  background: #FFFBEB;
+  border-color: #F59E0B;
+  color: #B45309;
+  font-weight: 900;
+  box-shadow: 0 4rpx 12rpx rgba(245, 158, 11, 0.2);
+}
+
+.category-chip:active {
+  transform: scale(0.96);
+}
+
+.empty-reset-btn {
+  margin-top: 24rpx;
+  background: #1C1917;
+  color: #FFFFFF;
+  font-size: 24rpx;
+  font-weight: 800;
+  padding: 14rpx 36rpx;
+  border-radius: 999rpx;
+  box-shadow: 0 4rpx 14rpx rgba(28, 25, 23, 0.2);
+}
+
+/* # 核心双轨流体瀑布流 (一左一右，不规则错落) */
+.waterfall-container {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18rpx;
+  box-sizing: border-box;
+}
+
+.waterfall-column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+}
+
+.waterfall-card {
+  border-radius: 24rpx;
+  overflow: hidden;
+  padding: 0;
+  border: 1rpx solid #F5F5F4;
+  background: #FFFFFF;
+  box-shadow: 0 4rpx 18rpx rgba(0, 0, 0, 0.04);
+  transition: transform 0.15s;
+}
+
+.waterfall-card:active {
+  transform: scale(0.985);
+}
+
+/* # 置顶大图展台 (自然流体高宽比) */
+.card-thumb-stage {
+  position: relative;
+  width: 100%;
+  background: #FAF8F5;
+  overflow: hidden;
+  min-height: 240rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.card-thumb-img {
+  width: 100%;
+  display: block;
+  border-top-left-radius: 24rpx;
+  border-top-right-radius: 24rpx;
+}
+
+.card-thumb-fallback {
+  padding: 50rpx 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.card-size-pill {
+  position: absolute;
+  top: 12rpx;
+  right: 12rpx;
+  background: rgba(28, 25, 23, 0.72);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: #FFFFFF;
+  font-size: 18rpx;
+  font-weight: 800;
+  font-family: monospace;
+  padding: 4rpx 12rpx;
+  border-radius: 999rpx;
+  z-index: 2;
+}
+
+.card-official-pill {
+  position: absolute;
+  top: 12rpx;
+  left: 12rpx;
+  background: linear-gradient(135deg, #F59E0B, #D97706);
+  color: #FFFFFF;
+  font-size: 18rpx;
+  font-weight: 800;
+  padding: 4rpx 12rpx;
+  border-radius: 999rpx;
+  box-shadow: 0 2rpx 8rpx rgba(217, 119, 6, 0.4);
+  letter-spacing: 0.5rpx;
+  z-index: 2;
+}
+
+/* # 下方紧凑多巴胺信息区 */
+.card-content-area {
+  padding: 16rpx 16rpx 18rpx;
+}
+
+.card-pattern-title {
+  font-size: 26rpx;
+  font-weight: 900;
+  color: #1C1917;
+  line-height: 1.35;
+  margin-bottom: 12rpx;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+
+.card-footer-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.card-author-info {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  flex: 1;
+  overflow: hidden;
+  margin-right: 10rpx;
+}
+
+.card-avatar-dot {
+  width: 24rpx;
+  height: 24rpx;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #F59E0B, #EA580C);
+  flex-shrink: 0;
+}
+
+.card-author-name {
+  font-size: 20rpx;
+  color: #78716C;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.card-like-pill {
+  display: flex;
+  align-items: center;
+  font-size: 20rpx;
+  font-weight: 800;
+  color: #A8A29E;
+  padding: 4rpx 8rpx;
+  transition: all 0.15s;
+}
+
+.card-like-pill.liked {
+  color: #F59E0B;
+}
+
+/* # 空状态 */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 100rpx 40rpx;
+  text-align: center;
+}
+
+.empty-icon-circle {
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: 999rpx;
+  background: #FFFFFF;
+  border: 1rpx solid #E7E5E4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 24rpx;
+  box-shadow: 0 6rpx 20rpx rgba(0, 0, 0, 0.04);
+}
+
+.empty-title {
+  font-size: 32rpx;
+  font-weight: 800;
+  color: #292524;
+  margin-bottom: 10rpx;
+}
+
+.empty-desc {
+  font-size: 24rpx;
+  color: #A8A29E;
+  line-height: 1.6;
+}

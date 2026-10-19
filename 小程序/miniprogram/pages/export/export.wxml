@@ -1,0 +1,61 @@
+<!-- # A4 高清图纸导出与物料清单页面 - Lucide Icons 矢量加持 -->
+<view class="export-container">
+  <!-- # 1. 高清图纸预览卡片 -->
+  <view class="artisan-card">
+    <view class="card-headline">
+      <view class="headline-left">
+        <text class="icon-lucide icon-image headline-lucide-icon" style="color: #B45309;"></text>
+        <text class="headline-title">A4 可打印高清图纸</text>
+      </view>
+      <text class="headline-hint">{{gridWidth}}×{{gridHeight}} · {{paletteBrand}}</text>
+    </view>
+
+    <!-- # 导出 Canvas -->
+    <view class="preview-wrap">
+      <canvas type="2d" id="exportCanvas" class="export-canvas"></canvas>
+    </view>
+
+    <button class="btn-glow-primary" bindtap="onSaveImageToAlbum" loading="{{isSavingImage}}" style="margin-top: 24rpx;">
+      <text class="icon-lucide icon-download" style="color: #FFFFFF; margin-right: 12rpx; width: 34rpx; height: 34rpx;"></text>
+      <text>保存 A4 图纸到系统相册</text>
+    </button>
+  </view>
+
+  <!-- # 2. BOM 耗材采购清单卡片 -->
+  <view class="artisan-card">
+    <view class="card-headline">
+      <view class="headline-left">
+        <text class="icon-lucide icon-grid headline-lucide-icon" style="color: #B45309;"></text>
+        <text class="headline-title">BOM 耗材采购清单</text>
+      </view>
+      <view class="headline-stats">
+        <text class="stat-badge">共 {{bomData.total}} 颗</text>
+        <text class="stat-badge">{{bomData.list.length}} 色</text>
+      </view>
+    </view>
+
+    <view class="bom-table">
+      <view class="bom-table-header">
+        <text class="th-code">色号</text>
+        <text class="th-name">名称</text>
+        <text class="th-color">色样</text>
+        <text class="th-count">所需颗数</text>
+      </view>
+      <scroll-view scroll-y class="bom-table-scroll">
+        <view wx:for="{{bomData.list}}" wx:key="code" class="bom-table-row">
+          <text class="td-code">{{item.code}}</text>
+          <text class="td-name">{{item.name_zh}}</text>
+          <view class="td-color">
+            <view class="color-sample" style="background-color: {{item.hex}};"></view>
+          </view>
+          <text class="td-count">{{item.count}} 颗</text>
+        </view>
+      </scroll-view>
+    </view>
+
+    <button class="btn-dock-pill" bindtap="onCopyBomText" style="margin-top: 24rpx; width: 100%;">
+      <text class="icon-lucide icon-copy" style="color: #1C1917; margin-right: 10rpx; width: 28rpx; height: 28rpx;"></text>
+      <text>一键复制 BOM 清单文字</text>
+    </button>
+  </view>
+</view>

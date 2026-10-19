@@ -1,0 +1,847 @@
+/* # 图纸详情页样式 - 多巴胺手作轻奢体系 */
+@import "../../styles/icons.wxss";
+
+.detail-container {
+  padding: 24rpx 28rpx calc(180rpx + env(safe-area-inset-bottom));
+}
+
+/* # 1. 画廊预览卡片 */
+.gallery-preview-card {
+  padding: 16rpx;
+  margin-bottom: 24rpx;
+  background: #FFFFFF;
+}
+
+.preview-stage {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  min-height: 640rpx;
+  background: #FAF8F5;
+  border-radius: 20rpx;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1rpx solid #F5F5F4;
+  box-sizing: border-box;
+}
+
+.preview-main-img {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.preview-fallback-box {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.detail-native-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.preview-actions-overlay {
+  position: absolute;
+  top: 16rpx;
+  right: 16rpx;
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  z-index: 10;
+}
+
+.preview-action-pill {
+  background: rgba(28, 25, 23, 0.76);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: #FFFFFF;
+  font-size: 20rpx;
+  font-weight: 800;
+  padding: 8rpx 18rpx;
+  border-radius: 999rpx;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 4rpx 14rpx rgba(0, 0, 0, 0.16);
+  transition: all 0.15s;
+}
+
+.preview-action-pill:active {
+  transform: scale(0.96);
+  background: rgba(28, 25, 23, 0.9);
+}
+
+/* # 2. 信息卡片 */
+.info-card {
+  padding: 30rpx 28rpx;
+  margin-bottom: 24rpx;
+}
+
+.pattern-header-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 22rpx;
+}
+
+.header-text-area {
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+}
+
+.pattern-headline {
+  font-size: 36rpx;
+  font-weight: 900;
+  color: #1C1917;
+}
+
+.publish-time-badge {
+  font-size: 22rpx;
+  color: #A8A29E;
+  font-weight: 700;
+}
+
+.status-pill {
+  font-size: 20rpx;
+  font-weight: 800;
+  padding: 6rpx 16rpx;
+  border-radius: 999rpx;
+  flex-shrink: 0;
+}
+
+.status-pill.public {
+  background: #DCFCE7;
+  color: #15803D;
+}
+
+.status-pill.private {
+  background: #F5F5F4;
+  color: #78716C;
+}
+
+/* # 作者栏 */
+.author-card-row {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  padding: 18rpx 0;
+  border-top: 1rpx solid #F5F5F4;
+  border-bottom: 1rpx solid #F5F5F4;
+  margin-bottom: 24rpx;
+}
+
+.author-avatar-wrap {
+  width: 72rpx;
+  height: 72rpx;
+  border-radius: 999rpx;
+  background: #FFFBEB;
+  border: 2rpx solid #FDE68A;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.author-avatar-img {
+  width: 100%;
+  height: 100%;
+}
+
+.author-info-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4rpx;
+}
+
+.author-name {
+  font-size: 28rpx;
+  font-weight: 800;
+  color: #1C1917;
+}
+
+.author-label {
+  font-size: 20rpx;
+  color: #78716C;
+  font-weight: 700;
+}
+
+/* # 规格与数据矩阵 */
+.stats-deck {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  background: #FAFAF9;
+  border-radius: 20rpx;
+  padding: 20rpx 0;
+  border: 1rpx solid #F5F5F4;
+}
+
+.stat-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.stat-value {
+  font-size: 32rpx;
+  font-family: monospace;
+  font-weight: 900;
+  color: #1C1917;
+}
+
+.stat-value.highlight-amber {
+  color: #D97706;
+}
+
+.stat-value.highlight-green {
+  color: #059669;
+}
+
+.stat-name {
+  font-size: 20rpx;
+  color: #78716C;
+  font-weight: 700;
+  margin-top: 4rpx;
+}
+
+.stat-separator {
+  width: 1rpx;
+  height: 38rpx;
+  background: #E7E5E4;
+}
+
+/* # 3. 评论区卡片 */
+.comments-card {
+  padding: 28rpx;
+  margin-bottom: 24rpx;
+}
+
+.comments-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 22rpx;
+}
+
+.comments-title-wrap {
+  display: flex;
+  align-items: center;
+}
+
+.comments-title {
+  font-size: 30rpx;
+  font-weight: 900;
+  color: #1C1917;
+}
+
+.comments-count {
+  font-size: 22rpx;
+  color: #A8A29E;
+  font-weight: 700;
+}
+
+.comments-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+  margin-bottom: 24rpx;
+}
+
+.comment-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 16rpx;
+  padding: 16rpx 0;
+  border-bottom: 1rpx solid #F5F5F4;
+}
+
+.comment-item:last-child {
+  border-bottom: none;
+}
+
+.comment-user-avatar {
+  width: 60rpx;
+  height: 60rpx;
+  border-radius: 999rpx;
+  background: #F5F5F4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.comment-avatar-img {
+  width: 100%;
+  height: 100%;
+}
+
+.comment-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+}
+
+.comment-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.comment-author-name {
+  font-size: 24rpx;
+  font-weight: 800;
+  color: #292524;
+}
+
+.comment-time {
+  font-size: 20rpx;
+  color: #A8A29E;
+}
+
+.comment-content {
+  font-size: 26rpx;
+  color: #44403C;
+  line-height: 1.5;
+}
+
+.empty-comments {
+  padding: 36rpx 20rpx;
+  text-align: center;
+  margin-bottom: 20rpx;
+  background: #FAFAF9;
+  border-radius: 20rpx;
+  border: 1rpx dashed #E7E5E4;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10rpx;
+}
+
+.empty-comment-icon-wrap {
+  width: 60rpx;
+  height: 60rpx;
+  border-radius: 999rpx;
+  background: #FFFBEB;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 4rpx;
+}
+
+.empty-comment-text {
+  font-size: 24rpx;
+  color: #78716C;
+  font-weight: 700;
+}
+
+/* # 输入框栏 */
+.comment-input-bar {
+  display: flex;
+  align-items: center;
+  gap: 14rpx;
+  padding-top: 18rpx;
+  border-top: 1rpx solid #F5F5F4;
+}
+
+.comment-input {
+  flex: 1;
+  height: 72rpx;
+  background: #FAFAF9;
+  border: 1rpx solid #E7E5E4;
+  border-radius: 999rpx;
+  padding: 0 24rpx;
+  font-size: 24rpx;
+  color: #1C1917;
+}
+
+.comment-placeholder {
+  color: #A8A29E;
+}
+
+.btn-send-comment {
+  width: 120rpx !important;
+  min-width: unset !important;
+  max-width: 120rpx !important;
+  height: 72rpx;
+  line-height: 72rpx;
+  padding: 0 !important;
+  border-radius: 999rpx;
+  background: #F5F5F4;
+  color: #A8A29E;
+  font-size: 24rpx;
+  font-weight: 800;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  margin: 0 !important;
+  flex-shrink: 0;
+  white-space: nowrap !important;
+  transition: all 0.15s;
+}
+
+.btn-send-comment::after {
+  border: none !important;
+}
+
+.btn-send-comment.active {
+  background: #1C1917;
+  color: #FFFFFF;
+  box-shadow: 0 4rpx 14rpx rgba(28, 25, 23, 0.2);
+}
+
+/* # 4. 底部固定操作坞 */
+.detail-bottom-dock {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
+  padding: 20rpx 28rpx calc(24rpx + env(safe-area-inset-bottom));
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+  border-top: 1rpx solid #F5F5F4;
+  z-index: 100;
+  box-shadow: 0 -4rpx 24rpx rgba(0, 0, 0, 0.04);
+}
+
+.dock-secondary-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 84rpx;
+  padding: 0 20rpx;
+  border-radius: 999rpx;
+  background: #FAFAF9;
+  border: 1rpx solid #E7E5E4;
+  color: #44403C;
+  flex-shrink: 0;
+  transition: all 0.15s;
+}
+
+.dock-secondary-btn.liked {
+  background: #FFFBEB;
+  border-color: #FDE68A;
+  color: #B45309;
+}
+
+.dock-btn-text {
+  font-size: 24rpx;
+  font-weight: 800;
+}
+
+.dock-load-btn {
+  flex: 1;
+  height: 84rpx;
+  border-radius: 999rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26rpx;
+  font-weight: 900;
+  margin: 0;
+}
+
+/* # 5. 微信官方一键快捷登录授权卡片 */
+.wechat-login-mask {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 999999;
+}
+
+.wechat-login-sheet {
+  width: 100%;
+  background: #FFFFFF;
+  border-top-left-radius: 44rpx;
+  border-top-right-radius: 44rpx;
+  padding: 48rpx 40rpx calc(48rpx + env(safe-area-inset-bottom));
+  box-sizing: border-box;
+  box-shadow: 0 -12rpx 48rpx rgba(0, 0, 0, 0.15);
+  animation: sheetSlideUp 0.28s cubic-bezier(0.33, 1, 0.68, 1);
+}
+
+@keyframes sheetSlideUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.wechat-sheet-header {
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+  margin-bottom: 24rpx;
+}
+
+.wechat-app-logo {
+  width: 88rpx;
+  height: 88rpx;
+  border-radius: 24rpx;
+  background: #FFFBEB;
+  border: 1rpx solid #FDE68A;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.wechat-sheet-title-col {
+  display: flex;
+  flex-direction: column;
+  gap: 6rpx;
+}
+
+.wechat-app-title {
+  font-size: 32rpx;
+  font-weight: 900;
+  color: #1C1917;
+}
+
+.wechat-app-desc {
+  font-size: 22rpx;
+  color: #78716C;
+  font-weight: 700;
+}
+
+.wechat-auth-prompt {
+  background: #FAFAF9;
+  border-radius: 20rpx;
+  padding: 24rpx;
+  margin-bottom: 36rpx;
+  border: 1rpx solid #F5F5F4;
+}
+
+.auth-prompt-text {
+  font-size: 24rpx;
+  color: #57534E;
+  line-height: 1.55;
+}
+
+/* # 微信经典绿按键 (单行锁死防折行) */
+.btn-wechat-primary {
+  width: 100% !important;
+  height: 94rpx;
+  background: #07C160;
+  color: #FFFFFF;
+  font-size: 32rpx;
+  font-weight: 800;
+  letter-spacing: 1rpx;
+  border-radius: 999rpx;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center;
+  justify-content: center;
+  gap: 16rpx;
+  white-space: nowrap !important;
+  padding: 0 48rpx !important;
+  box-sizing: border-box;
+  box-shadow: 0 8rpx 24rpx rgba(7, 193, 96, 0.35);
+  margin-bottom: 24rpx;
+  transition: all 0.15s;
+}
+
+.btn-wechat-primary::after {
+  border: none !important;
+}
+
+.btn-wechat-primary:active {
+  transform: scale(0.98);
+  background: #06AD56;
+}
+
+.wechat-logo-icon {
+  width: 38rpx;
+  height: 38rpx;
+  background-image: url('data:image/svg+xml;utf8,<svg viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg"><path d="M8.5 3C4.36 3 1 5.91 1 9.5c0 1.99 1.04 3.78 2.68 4.98L3 18l3.65-1.04c.59.18 1.21.28 1.85.28.2 0 .4-.01.6-.03C9.04 16.7 9 16.11 9 15.5 9 11.91 12.36 9 16.5 9c.17 0 .33.01.5.02C16.14 5.56 12.63 3 8.5 3zm-2.25 4a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5zm4.5 0a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5zM16.5 10c-3.59 0-6.5 2.46-6.5 5.5 0 3.04 2.91 5.5 6.5 5.5.56 0 1.1-.08 1.62-.24L21 21.5l-.59-2.95C21.94 17.51 23 16.08 23 14.5c0-3.04-2.91-5.5-6.5-5.5zm-2 3.5a1 1 0 1 1 0 2 1 1 0 0 1 0-2zm4 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/></svg>');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.wechat-cancel-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12rpx 0;
+}
+
+.wechat-cancel-text {
+  font-size: 24rpx;
+  color: #A8A29E;
+  font-weight: 700;
+}
+
+/* # 表单选用组件样式 */
+.auth-form-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 22rpx 20rpx;
+  background: #FAFAF9;
+  border-radius: 20rpx;
+  border: 1rpx solid #F5F5F4;
+  margin-bottom: 20rpx;
+}
+
+.form-label {
+  font-size: 26rpx;
+  font-weight: 800;
+  color: #44403C;
+  flex-shrink: 0;
+}
+
+.avatar-choose-btn {
+  display: flex !important;
+  align-items: center;
+  gap: 12rpx;
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  line-height: normal !important;
+  height: auto !important;
+}
+
+.avatar-choose-btn::after {
+  border: none !important;
+}
+
+.avatar-choose-img {
+  width: 72rpx;
+  height: 72rpx;
+  border-radius: 50%;
+  border: 2rpx solid #FDE68A;
+}
+
+.avatar-choose-placeholder {
+  width: 72rpx;
+  height: 72rpx;
+  border-radius: 50%;
+  background: #FFFBEB;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.avatar-choose-badge {
+  font-size: 22rpx;
+  color: #0284C7;
+  font-weight: 800;
+}
+
+.auth-nickname-input {
+  flex: 1;
+  text-align: right;
+  font-size: 26rpx;
+  color: #1C1917;
+  font-weight: 800;
+  padding-left: 20rpx;
+}
+
+/* # 微信昵称智能提示与快速点选条 */
+.nickname-guide-bar {
+  margin: -10rpx 0 20rpx;
+  padding: 14rpx 18rpx;
+  background: #F0F9FF;
+  border-radius: 16rpx;
+  border: 1rpx solid #E0F2FE;
+  display: flex;
+  flex-direction: column;
+  gap: 10rpx;
+}
+
+.guide-tip-row {
+  display: flex;
+  align-items: center;
+}
+
+.guide-tip-text {
+  font-size: 20rpx;
+  color: #0369A1;
+  font-weight: 700;
+}
+
+.quick-nick-row {
+  display: flex;
+  align-items: center;
+  gap: 10rpx;
+  flex-wrap: wrap;
+}
+
+.quick-nick-label {
+  font-size: 20rpx;
+  color: #78716C;
+  font-weight: 700;
+}
+
+.quick-nick-tag {
+  font-size: 20rpx;
+  font-weight: 800;
+  color: #1C1917;
+  background: #FFFFFF;
+  border: 1rpx solid #BAE6FD;
+  padding: 4rpx 14rpx;
+  border-radius: 999rpx;
+  box-shadow: 0 2rpx 8rpx rgba(2, 132, 199, 0.08);
+  transition: all 0.15s;
+}
+
+.quick-nick-tag:active {
+  background: #E0F2FE;
+  transform: scale(0.96);
+}
+
+/* # 协议勾选行 */
+.auth-agreement-row {
+  display: flex;
+  align-items: center;
+  gap: 14rpx;
+  margin: 28rpx 4rpx 32rpx;
+  cursor: pointer;
+}
+
+.agreement-box {
+  width: 32rpx;
+  height: 32rpx;
+  border-radius: 8rpx;
+  border: 2rpx solid #D6D3D1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.15s;
+}
+
+.agreement-box.checked {
+  background: #07C160;
+  border-color: #07C160;
+}
+
+.agreement-check-mark {
+  color: #FFFFFF;
+  font-size: 22rpx;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.agreement-text-wrap {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  font-size: 22rpx;
+  color: #78716C;
+  line-height: 1.5;
+}
+
+.agreement-plain {
+  color: #78716C;
+}
+
+.agreement-link {
+  color: #0284C7;
+  font-weight: 800;
+}
+
+/* # 6. 协议阅读弹窗 */
+.policy-modal-mask {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000000;
+  padding: 40rpx;
+  box-sizing: border-box;
+}
+
+.policy-modal-box {
+  width: 100%;
+  max-height: 80vh;
+  background: #FFFFFF;
+  border-radius: 32rpx;
+  padding: 36rpx;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20rpx 60rpx rgba(0, 0, 0, 0.2);
+}
+
+.policy-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24rpx;
+}
+
+.policy-modal-title {
+  font-size: 30rpx;
+  font-weight: 900;
+  color: #1C1917;
+}
+
+.policy-close-btn {
+  width: 50rpx;
+  height: 50rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 40rpx;
+  color: #78716C;
+}
+
+.policy-modal-body {
+  max-height: 50vh;
+  margin-bottom: 28rpx;
+}
+
+.policy-text {
+  font-size: 24rpx;
+  color: #44403C;
+  line-height: 1.7;
+  white-space: pre-wrap;
+}
+
+.btn-policy-agree {
+  width: 100% !important;
+  height: 84rpx;
+  background: #1C1917;
+  color: #FFFFFF;
+  font-size: 28rpx;
+  font-weight: 800;
+  border-radius: 999rpx;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  margin: 0 !important;
+}
+
+.btn-policy-agree::after {
+  border: none !important;
+}
+
+
+

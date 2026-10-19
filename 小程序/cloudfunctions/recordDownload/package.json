@@ -1,0 +1,9 @@
+{
+  "name": "recordDownload",
+  "version": "1.0.0",
+  "description": "记录图纸开拼下载次数",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "~2.6.3"
+  }
+}

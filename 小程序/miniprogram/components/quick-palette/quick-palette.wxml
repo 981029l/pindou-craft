@@ -1,0 +1,74 @@
+<!-- # 微信小程序原生底部抽屉 (Bottom Sheet) 快捷调色盘 - Lucide 纯矢量 -->
+<view wx:if="{{visible}}" class="palette-mask" bindtap="onClose"></view>
+
+<view wx:if="{{visible}}" class="palette-drawer">
+  <!-- # 顶部标头与极简关闭图标 -->
+  <view class="drawer-header">
+    <view class="header-title-wrap">
+      <text class="icon-lucide icon-palette" style="color: #B45309; margin-right: 8rpx; width: 28rpx; height: 28rpx;"></text>
+      <text class="header-title">快捷调色盘 ({{paletteBrand}})</text>
+      <text class="header-count">共 {{totalBrandColors}} 色</text>
+    </view>
+    <view class="close-icon-btn" catchtap="onClose">
+      <text class="icon-lucide icon-x" style="width: 26rpx; height: 26rpx; color: #78716C;"></text>
+    </view>
+  </view>
+
+  <!-- # 1. 优先置顶: 本图正在使用的颜色 -->
+  <view wx:if="{{usedColors.length > 0 && !searchKeyword}}" class="used-section">
+    <view class="section-title-wrap">
+      <text class="section-title">本图已用色 ({{usedColors.length}} 色)</text>
+      <text class="section-tip">点击即切</text>
+    </view>
+    <scroll-view scroll-x class="used-scroll">
+      <view class="used-list">
+        <view 
+          wx:for="{{usedColors}}" 
+          wx:key="code" 
+          class="used-chip {{selectedColorCode === item.code ? 'active' : ''}}"
+          catchtap="onPickColor"
+          data-code="{{item.code}}"
+        >
+          <view class="used-color-dot" style="background-color: {{item.hex}};"></view>
+          <text class="used-code">{{item.code}}</text>
+        </view>
+      </view>
+    </scroll-view>
+  </view>
+
+  <!-- # 2. 搜索过滤框 -->
+  <view class="search-box">
+    <input 
+      type="text" 
+      placeholder="搜索全部色号或名称 (如 H07 / 蓝 / 黑)..." 
+      value="{{searchKeyword}}" 
+      bindinput="onSearchInput"
+      class="search-input"
+    />
+  </view>
+
+  <!-- # 3. 全部品牌色库网格 -->
+  <view class="grid-header">
+    <text class="grid-title">全部品牌色库 ({{displayColors.length}} 色)</text>
+    <text wx:if="{{searchKeyword}}" class="clear-search" catchtap="onClearSearch">清空搜索</text>
+  </view>
+
+  <scroll-view scroll-y class="colors-scroll">
+    <view class="colors-grid">
+      <view 
+        wx:for="{{displayColors}}" 
+        wx:key="code" 
+        class="color-card {{selectedColorCode === item.code ? 'active' : ''}}"
+        catchtap="onPickColor"
+        data-code="{{item.code}}"
+      >
+        <view class="color-preview-block" style="background-color: {{item.hex}}; color: {{item.textColor}};">
+          <text class="card-code">{{item.code}}</text>
+        </view>
+        <view class="card-name-row">
+          <text class="card-name">{{item.name_zh}}</text>
+        </view>
+      </view>
+    </view>
+  </scroll-view>
+</view>

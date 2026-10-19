@@ -1,0 +1,340 @@
+/* # 二级全量图纸作品库样式表 */
+.collection-container {
+  min-height: 100vh;
+  background: #F8F6F0;
+  padding-bottom: 60rpx;
+  box-sizing: border-box;
+}
+
+/* # 1. 顶部置顶搜索栏 */
+.search-sticky-bar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(248, 246, 240, 0.92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  padding: 20rpx 24rpx 14rpx;
+}
+
+.search-input-box {
+  display: flex;
+  align-items: center;
+  background: #FFFFFF;
+  border-radius: 999rpx;
+  padding: 0 24rpx;
+  height: 80rpx;
+  border: 1rpx solid #E7E5E4;
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.03);
+}
+
+.search-input {
+  flex: 1;
+  font-size: 26rpx;
+  color: #1C1917;
+}
+
+.clear-btn {
+  width: 44rpx;
+  height: 44rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #A8A29E;
+  font-size: 32rpx;
+}
+
+/* # 2. 分类筛选胶囊 */
+.filter-pills-row {
+  display: flex;
+  align-items: center;
+  gap: 14rpx;
+  padding: 10rpx 24rpx 24rpx;
+}
+
+.filter-pill {
+  padding: 10rpx 24rpx;
+  border-radius: 999rpx;
+  background: #FFFFFF;
+  border: 1rpx solid #E7E5E4;
+  font-size: 22rpx;
+  font-weight: 800;
+  color: #78716C;
+  transition: all 0.15s;
+}
+
+.filter-pill.active {
+  background: #1C1917;
+  color: #FFFFFF;
+  border-color: #1C1917;
+  box-shadow: 0 4rpx 14rpx rgba(28, 25, 23, 0.18);
+}
+
+/* # 3. 双轨流体瀑布流 */
+.collection-waterfall {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18rpx;
+  padding: 0 24rpx;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.waterfall-col {
+  flex: 1;
+  width: calc(50% - 9rpx);
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+  box-sizing: border-box;
+}
+
+.col-card {
+  width: 100%;
+  min-width: 0;
+  border-radius: 24rpx;
+  overflow: hidden;
+  padding: 0;
+  border: 1rpx solid #F5F5F4;
+  background: #FFFFFF;
+  box-shadow: 0 4rpx 18rpx rgba(0, 0, 0, 0.04);
+  box-sizing: border-box;
+}
+
+.col-thumb-stage {
+  position: relative;
+  width: 100%;
+  background: #FAF8F5;
+  overflow: hidden;
+  min-height: 240rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.col-thumb-img {
+  width: 100%;
+  display: block;
+  border-top-left-radius: 24rpx;
+  border-top-right-radius: 24rpx;
+}
+
+.col-thumb-fallback {
+  padding: 50rpx 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.col-status-pill {
+  position: absolute;
+  top: 12rpx;
+  right: 12rpx;
+  font-size: 18rpx;
+  font-weight: 800;
+  padding: 4rpx 12rpx;
+  border-radius: 999rpx;
+}
+
+.col-status-pill.public {
+  background: rgba(220, 252, 231, 0.92);
+  color: #15803D;
+}
+
+.col-status-pill.private {
+  background: rgba(245, 245, 244, 0.92);
+  color: #78716C;
+}
+
+.col-info-area {
+  padding: 16rpx;
+}
+
+.col-pattern-name {
+  font-size: 26rpx;
+  font-weight: 900;
+  color: #1C1917;
+  line-height: 1.35;
+  margin-bottom: 10rpx;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
+  overflow: hidden;
+}
+
+.col-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  margin-bottom: 16rpx;
+}
+
+.col-chip-brand {
+  background: #FEF3C7;
+  color: #92400E;
+  font-size: 18rpx;
+  font-weight: 800;
+  padding: 2rpx 8rpx;
+  border-radius: 6rpx;
+}
+
+.col-chip-size {
+  background: #F5F5F4;
+  color: #57534E;
+  font-size: 18rpx;
+  font-weight: 800;
+  font-family: monospace;
+  padding: 2rpx 8rpx;
+  border-radius: 6rpx;
+}
+
+.col-actions-row {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  border-top: 1rpx solid #F5F5F4;
+  padding-top: 14rpx;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.col-action-btn {
+  flex: 1;
+  min-width: 0;
+  height: 54rpx;
+  border-radius: 12rpx;
+  font-size: 20rpx;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4rpx;
+  margin: 0;
+  white-space: nowrap;
+  box-sizing: border-box;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.col-action-btn:active {
+  transform: scale(0.96);
+  opacity: 0.9;
+}
+
+.load-btn {
+  background: #FAFAF9;
+  border: 1rpx solid #E7E5E4;
+  color: #1C1917;
+}
+
+.pub-btn {
+  background: #FFFBEB;
+  border: 1rpx solid #FDE68A;
+  color: #B45309;
+}
+
+.pub-btn.unpub {
+  background: #F5F5F4;
+  border-color: #E7E5E4;
+  color: #78716C;
+}
+
+.col-delete-btn {
+  width: 52rpx;
+  min-width: 52rpx;
+  max-width: 52rpx;
+  height: 54rpx;
+  border-radius: 12rpx;
+  background: #FEF2F2;
+  border: 1rpx solid #FEE2E2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.col-delete-btn:active {
+  transform: scale(0.92);
+  background: #FEE2E2;
+}
+
+/* # 4. 空状态 (居中多巴胺微光手作美学) */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 140rpx 40rpx 80rpx;
+  text-align: center;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.empty-icon-circle {
+  width: 128rpx;
+  height: 128rpx;
+  border-radius: 999rpx;
+  background: #F0F9FF;
+  border: 2rpx solid #E0F2FE;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 32rpx;
+  box-shadow: 0 8rpx 28rpx rgba(2, 132, 199, 0.12);
+}
+
+.empty-title {
+  font-size: 34rpx;
+  font-weight: 900;
+  color: #1C1917;
+  letter-spacing: -0.5rpx;
+  margin-bottom: 14rpx;
+}
+
+.empty-desc {
+  font-size: 24rpx;
+  color: #78716C;
+  line-height: 1.6;
+  max-width: 540rpx;
+  margin-bottom: 36rpx;
+}
+
+.empty-action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #FFFFFF;
+  border: 1rpx solid #E7E5E4;
+  color: #1C1917;
+  font-size: 24rpx;
+  font-weight: 800;
+  padding: 16rpx 40rpx;
+  border-radius: 999rpx;
+  box-shadow: 0 4rpx 14rpx rgba(0, 0, 0, 0.04);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.empty-action-btn:active {
+  transform: scale(0.96);
+  background: #F5F5F4;
+}
+
+.empty-action-btn.primary {
+  background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+  border: none;
+  color: #FFFFFF;
+  box-shadow: 0 6rpx 20rpx rgba(245, 158, 11, 0.35);
+}
+
+.empty-action-btn.primary:active {
+  transform: scale(0.96);
+  box-shadow: 0 2rpx 10rpx rgba(245, 158, 11, 0.25);
+}

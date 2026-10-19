@@ -1,0 +1,236 @@
+<!-- # 我的中心与个人作品集 - 画廊级重构 -->
+<view class="mine-container">
+  <!-- # 1. 创作者个人名片中枢 (支持点击同步微信资料与分享) -->
+  <view class="artisan-card profile-card">
+    <view class="profile-header-wrap">
+      <view class="profile-header" bindtap="onTapProfileHeader">
+        <view class="avatar-ring">
+          <image wx:if="{{isLoggedIn && userInfo.avatarUrl}}" class="avatar-img" src="{{userInfo.avatarUrl}}"></image>
+          <text wx:else class="icon-lucide icon-palette" style="color: #F59E0B; width: 44rpx; height: 44rpx;"></text>
+        </view>
+        <view class="profile-info">
+          <view class="name-row">
+            <text class="user-nickname">{{isLoggedIn ? (userInfo.nickName || '拼豆创作者') : '未登录手作人'}}</text>
+            <view class="creator-level-badge {{isLoggedIn ? '' : 'unlogged'}}">
+              <text wx:if="{{isLoggedIn}}" class="icon-lucide icon-sparkles" style="color: #B45309; width: 18rpx; height: 18rpx; margin-right: 4rpx;"></text>
+              <text>{{isLoggedIn ? '认证匠人' : '游客体验'}}</text>
+            </view>
+          </view>
+          <view class="profile-sync-tip">
+            <text class="sync-dot {{isLoggedIn ? 'online' : 'offline'}}"></text>
+            <text class="sync-text">{{isLoggedIn ? '微信云同步 · 点击更新资料' : '登录后同步云端图纸与灵感作品'}}</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- # 分享创作者名片微胶囊 (仅已登录展示) -->
+      <button wx:if="{{isLoggedIn}}" class="btn-share-profile" open-type="share">
+        <text class="icon-lucide icon-sparkles" style="color: #B45309; width: 20rpx; height: 20rpx; margin-right: 4rpx;"></text>
+        <text>分享名片</text>
+      </button>
+      <!-- # 未登录时显示全页唯一的微光立即登录微胶囊 -->
+      <button wx:else class="btn-share-profile btn-login-pill" bindtap="onOpenLoginSheet">
+        <text>立即登录</text>
+      </button>
+    </view>
+
+    <!-- # 统计数据行 (点击直达二级分类筛选) -->
+    <view class="stats-deck">
+      <view class="stat-box" bindtap="onNavigateToCollection" data-filter="all">
+        <text class="stat-num">{{patternList.length}}</text>
+        <view class="stat-label-row">
+          <text class="stat-label">我的图纸</text>
+          <text class="icon-lucide icon-chevron-right stat-micro-chevron"></text>
+        </view>
+      </view>
+      <view class="stat-divider"></view>
+      <view class="stat-box" bindtap="onNavigateToCollection" data-filter="public">
+        <text class="stat-num highlight-green">{{publicCount}}</text>
+        <view class="stat-label-row">
+          <text class="stat-label">社区公开</text>
+          <text class="icon-lucide icon-chevron-right stat-micro-chevron"></text>
+        </view>
+      </view>
+      <view class="stat-divider"></view>
+      <view class="stat-box" bindtap="onShowLikesSummary">
+        <text class="stat-num highlight-amber">{{totalLikes}}</text>
+        <text class="stat-label">获赞总数</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- # 2. 创作空间核心导航卡 (直达二级双轨流体画廊，彻底告别冗长滚屏) -->
+  <view class="artisan-card gallery-nav-card" bindtap="onNavigateToCollection" data-filter="all" hover-class="card-hover">
+    <view class="nav-card-left">
+      <view class="nav-icon-badge">
+        <text class="icon-lucide icon-palette" style="color: #B45309; width: 40rpx; height: 40rpx;"></text>
+      </view>
+      <view class="nav-text-col">
+        <view class="nav-title-row">
+          <text class="nav-title">我的手作图库</text>
+          <text class="nav-badge-pill" wx:if="{{patternList.length > 0}}">{{patternList.length}} 幅</text>
+        </view>
+        <text class="nav-subtitle">浏览双轨流体画廊 · 快速开拼与作品管理</text>
+      </view>
+    </view>
+    <view class="nav-card-right">
+      <text class="nav-action-label">进入图库</text>
+      <text class="icon-lucide icon-chevron-right" style="width: 24rpx; height: 24rpx; color: #D97706;"></text>
+    </view>
+  </view>
+
+  <!-- # 3. 设置与技术规格卡片 (集成合规、色彩规范与版本号) -->
+  <view class="artisan-card settings-card">
+    <view class="settings-item" bindtap="onOpenPolicy" data-type="service">
+      <view class="settings-left">
+        <text class="icon-lucide icon-file-text" style="color: #78716C; width: 28rpx; height: 28rpx; margin-right: 14rpx;"></text>
+        <text class="settings-title">用户服务协议</text>
+      </view>
+      <text class="icon-lucide icon-chevron-right" style="width: 24rpx; height: 24rpx; color: #A8A29E;"></text>
+    </view>
+    <view class="settings-divider"></view>
+    <view class="settings-item" bindtap="onOpenPolicy" data-type="privacy">
+      <view class="settings-left">
+        <text class="icon-lucide icon-shield-check" style="color: #78716C; width: 28rpx; height: 28rpx; margin-right: 14rpx;"></text>
+        <text class="settings-title">隐私保护指引</text>
+      </view>
+      <text class="icon-lucide icon-chevron-right" style="width: 24rpx; height: 24rpx; color: #A8A29E;"></text>
+    </view>
+    <view class="settings-divider"></view>
+    <view class="settings-item" bindtap="onClearCache">
+      <view class="settings-left">
+        <text class="icon-lucide icon-rotate-cw" style="color: #78716C; width: 28rpx; height: 28rpx; margin-right: 14rpx;"></text>
+        <text class="settings-title">清理本地缓存</text>
+      </view>
+      <text class="icon-lucide icon-chevron-right" style="width: 24rpx; height: 24rpx; color: #A8A29E;"></text>
+    </view>
+    <view class="settings-divider"></view>
+    <view class="settings-item no-arrow">
+      <view class="settings-left">
+        <text class="icon-lucide icon-layers" style="color: #78716C; width: 28rpx; height: 28rpx; margin-right: 14rpx;"></text>
+        <text class="settings-title">色彩引擎</text>
+      </view>
+      <text class="settings-val-tag">CIEDE2000 · MARD 221</text>
+    </view>
+    <view class="settings-divider"></view>
+    <view class="settings-item no-arrow">
+      <view class="settings-left">
+        <text class="icon-lucide icon-grid" style="color: #78716C; width: 28rpx; height: 28rpx; margin-right: 14rpx;"></text>
+        <text class="settings-title">系统版本</text>
+      </view>
+      <text class="settings-version-pill">v1.0.1</text>
+    </view>
+  </view>
+
+  <!-- # 4. 账户安全操作区 (仅已登录时展示红色退出通道，游客态保持纯净呼吸感) -->
+  <view wx:if="{{isLoggedIn}}" class="account-action-wrap">
+    <button class="btn-account-action btn-logout-action" bindtap="onLogout">
+      <text class="icon-lucide icon-logout" style="color: #DC2626; width: 28rpx; height: 28rpx; margin-right: 12rpx;"></text>
+      <text>退出当前微信登录</text>
+    </button>
+  </view>
+
+  <!-- # 5. 极简轻奢品牌页脚 -->
+  <view class="mine-footer">
+    <text class="footer-brand">PinDou Atelier · 拼豆工坊</text>
+    <text class="footer-slogan">用微珠定格像素艺术 · 微信云原生开发驱动</text>
+  </view>
+
+  <!-- # 6. 微信官方最新标准登录授权弹窗 (chooseAvatar + type="nickname") -->
+  <view wx:if="{{showLoginSheet}}" class="auth-modal-mask" bindtap="onCloseLoginSheet">
+    <view class="auth-modal-sheet" catchtap="preventBubble">
+      <view class="auth-sheet-header">
+        <view class="auth-app-logo">
+          <text class="icon-lucide icon-sparkles" style="color: #F59E0B; width: 44rpx; height: 44rpx;"></text>
+        </view>
+        <view class="auth-title-col">
+          <text class="auth-main-title">PinDou 拼豆工坊</text>
+          <text class="auth-sub-title">申请获取您的头像与昵称用于展示创作者手作名片</text>
+        </view>
+      </view>
+
+      <!-- 头像选用 (微信官方 chooseAvatar) -->
+      <view class="auth-form-item">
+        <text class="form-label">创作者头像</text>
+        <button class="avatar-choose-btn" open-type="chooseAvatar" bindchooseavatar="onChooseAvatar">
+          <image wx:if="{{tempAvatarUrl}}" class="avatar-choose-img" src="{{tempAvatarUrl}}"></image>
+          <view wx:else class="avatar-choose-placeholder">
+            <text class="icon-lucide icon-palette" style="color: #F59E0B; width: 40rpx; height: 40rpx;"></text>
+          </view>
+          <view class="avatar-choose-badge">
+            <text class="icon-lucide icon-camera" style="width: 24rpx; height: 24rpx; margin-right: 6rpx; color: #0284C7;"></text>
+            <text>点选头像</text>
+          </view>
+        </button>
+      </view>
+
+      <!-- 昵称输入 (微信官方 type="nickname") -->
+      <view class="auth-form-item">
+        <text class="form-label">创作者昵称</text>
+        <input 
+          type="nickname" 
+          class="auth-nickname-input" 
+          placeholder="点击直接选用微信昵称" 
+          value="{{tempNickName}}"
+          bindinput="onNicknameInput"
+          bindblur="onNicknameBlur"
+          bindchange="onNicknameChange"
+        />
+      </view>
+
+      <!-- 微信昵称智能指引与快捷选用条 -->
+      <view class="nickname-guide-bar">
+        <view class="guide-tip-row">
+          <text class="icon-lucide icon-sparkles" style="color: #0284C7; width: 22rpx; height: 22rpx; margin-right: 6rpx;"></text>
+          <text class="guide-tip-text">真机点击输入框将自动浮现微信昵称气泡一键选用</text>
+        </view>
+        <view class="quick-nick-row">
+          <text class="quick-nick-label">快速选用：</text>
+          <view class="quick-nick-tag" catchtap="onSelectQuickNick" data-nick="手作艺术家">手作艺术家</view>
+          <view class="quick-nick-tag" catchtap="onSelectQuickNick" data-nick="拼豆匠人">拼豆匠人</view>
+          <view class="quick-nick-tag" catchtap="onSelectQuickNick" data-nick="像素手作师">像素手作师</view>
+        </view>
+      </view>
+
+      <!-- 协议勾选行 -->
+      <view class="auth-agreement-row" bindtap="onToggleAgreement">
+        <view class="agreement-box {{isAgreed ? 'checked' : ''}}">
+          <text wx:if="{{isAgreed}}" class="icon-lucide icon-check" style="width: 18rpx; height: 18rpx; color: #FFFFFF;"></text>
+        </view>
+        <view class="agreement-text-wrap">
+          <text class="agreement-plain">我已阅读并同意</text>
+          <text class="agreement-link" catchtap="onOpenPolicy" data-type="service">《用户服务协议》</text>
+          <text class="agreement-plain">与</text>
+          <text class="agreement-link" catchtap="onOpenPolicy" data-type="privacy">《隐私保护指引》</text>
+        </view>
+      </view>
+
+      <!-- 确认授权按键 (官方经典绿) -->
+      <button class="btn-auth-confirm" bindtap="onConfirmAuthLogin">
+        <text>确认微信授权登录</text>
+      </button>
+
+      <view class="auth-cancel-row" bindtap="onCloseLoginSheet">
+        <text class="auth-cancel-text">暂不登录，仅以游客浏览</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- # 7. 协议政策阅读弹窗 -->
+  <view wx:if="{{showPolicyModal}}" class="policy-modal-mask" bindtap="onClosePolicyModal">
+    <view class="policy-modal-box" catchtap="preventBubble">
+      <view class="policy-modal-header">
+        <text class="policy-modal-title">{{policyTitle}}</text>
+        <view class="policy-close-btn" bindtap="onClosePolicyModal">
+          <text class="icon-lucide icon-x" style="width: 24rpx; height: 24rpx; color: #78716C;"></text>
+        </view>
+      </view>
+      <scroll-view scroll-y class="policy-modal-body">
+        <text class="policy-text" user-select>{{policyContent}}</text>
+      </scroll-view>
+      <button class="btn-policy-agree" bindtap="onClosePolicyModal">
+        <text>我已理解并知晓</text>
+      </button>
+    </view>
+  </view>
+</view>

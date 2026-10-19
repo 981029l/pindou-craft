@@ -1,0 +1,25 @@
+<!-- # 极光流体胶囊 TabBar - 弹窗感知智能压暗 -->
+<view class="fluid-tab-container {{isDimmed ? 'tab-dimmed' : ''}}">
+  <view class="fluid-dock">
+    <!-- # 仿生流体弹性滑块 (Squash & Stretch Spring) -->
+    <view 
+      class="fluid-slider {{isStretching ? 'stretching' : ''}}" 
+      style="transform: translateX({{selected * 100}}%) {{isStretching ? 'scaleX(1.16) scaleY(0.92)' : 'scale(1)'}};"
+    ></view>
+
+    <!-- # 3 大交互选项卡 -->
+    <view 
+      wx:for="{{list}}" 
+      wx:key="pagePath" 
+      class="tab-item {{selected === index ? 'active' : ''}}"
+      bindtap="switchTab"
+      data-index="{{index}}"
+      data-path="{{item.pagePath}}"
+    >
+      <view class="tab-icon-wrap">
+        <text class="icon-lucide {{item.iconClass}} tab-icon"></text>
+      </view>
+      <text class="tab-label">{{item.text}}</text>
+    </view>
+  </view>
+</view>

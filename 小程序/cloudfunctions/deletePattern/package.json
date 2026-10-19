@@ -1,0 +1,9 @@
+{
+  "name": "deletePattern",
+  "version": "1.0.0",
+  "description": "删除指定拼豆图纸",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "~2.6.3"
+  }
+}

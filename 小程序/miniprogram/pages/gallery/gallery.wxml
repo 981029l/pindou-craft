@@ -1,0 +1,45 @@
+<!-- # 我的拼豆作品集页面 - Lucide Icons 矢量加持 -->
+<view class="gallery-container">
+  <!-- # 顶部统计与刷新 -->
+  <view class="gallery-header">
+    <view class="header-left">
+      <text class="icon-lucide icon-cloud" style="color: #0284C7; margin-right: 8rpx; width: 34rpx; height: 34rpx;"></text>
+      <text class="gallery-title">云端作品集</text>
+    </view>
+    <text class="gallery-count">共 {{patternList.length}} 幅图纸</text>
+  </view>
+
+  <!-- # 作品卡片列表 -->
+  <view wx:if="{{patternList.length > 0}}" class="project-list">
+    <view wx:for="{{patternList}}" wx:key="_id" class="project-card">
+      <view class="project-info">
+        <text class="project-name">{{item.name}}</text>
+        <view class="project-meta">
+          <text class="meta-tag">{{item.width}}×{{item.height}}</text>
+          <text class="meta-tag">{{item.paletteBrand || 'MARD'}}</text>
+          <text class="meta-date">{{item.createTimeFormatted}}</text>
+        </view>
+      </view>
+
+      <view class="project-actions">
+        <button class="btn-load" bindtap="onLoadPattern" data-index="{{index}}">载入编辑</button>
+        <button class="btn-delete" bindtap="onDeletePattern" data-id="{{item._id}}">
+          <text class="icon-lucide icon-trash" style="color: #DC2626; width: 24rpx; height: 24rpx;"></text>
+        </button>
+      </view>
+    </view>
+  </view>
+
+  <!-- # 空状态提示 -->
+  <view wx:else class="empty-state">
+    <view class="empty-icon-circle">
+      <text class="icon-lucide icon-palette" style="width: 56rpx; height: 56rpx; color: #B45309;"></text>
+    </view>
+    <text class="empty-title">暂无云端作品</text>
+    <text class="empty-desc">前往工作台制作拼豆，点击“存入云端作品集”即可同步至此</text>
+    <view class="empty-action-btn primary" bindtap="onGoToWorkbench">
+      <text class="icon-lucide icon-sparkles" style="width: 24rpx; height: 24rpx; margin-right: 8rpx; color: #FFFFFF;"></text>
+      <text>前往工作台创作</text>
+    </view>
+  </view>
+</view>

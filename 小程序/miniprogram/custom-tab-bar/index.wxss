@@ -1,0 +1,112 @@
+/* # 极光流体胶囊 TabBar 样式 - 0 矩形黑角 · 弹窗智能压暗 */
+@import "../styles/icons.wxss";
+
+.fluid-tab-container {
+  position: fixed;
+  bottom: calc(24rpx + env(safe-area-inset-bottom));
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 99999;
+  transform: translate3d(0, 0, 99px);
+  -webkit-transform: translate3d(0, 0, 99px);
+  transition: opacity 0.28s ease, transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.28s ease;
+}
+
+/* # 弹窗/抽屉开启时智能压暗沉浸 */
+.fluid-tab-container.tab-dimmed {
+  opacity: 0.12;
+  filter: blur(4px) brightness(0.5);
+  pointer-events: none;
+  transform: translate3d(0, 12rpx, 0);
+}
+
+/* # 毛玻璃灵动岛底座 (真全圆角柔和漫反射) */
+.fluid-dock {
+  pointer-events: auto;
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 580rpx;
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
+  border-radius: 999rpx;
+  padding: 8rpx;
+  border: 1rpx solid rgba(255, 255, 255, 0.9);
+  box-shadow: 0 10rpx 30rpx rgba(0, 0, 0, 0.07), 0 2rpx 6rpx rgba(0, 0, 0, 0.02);
+}
+
+/* # 流体弹性滑块 */
+.fluid-slider {
+  position: absolute;
+  left: 8rpx;
+  top: 8rpx;
+  bottom: 8rpx;
+  width: calc((100% - 16rpx) / 3);
+  background: #1C1917;
+  border-radius: 999rpx;
+  box-shadow: 0 4rpx 14rpx rgba(28, 25, 23, 0.22);
+  transition: transform 0.38s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transform-origin: center center;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.fluid-slider.stretching {
+  transition: transform 0.24s cubic-bezier(0.2, 0.8, 0.3, 1);
+}
+
+/* # 选项卡按键 */
+.tab-item {
+  position: relative;
+  z-index: 2;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10rpx;
+  padding: 16rpx 0;
+  border-radius: 999rpx;
+  transition: all 0.2s ease;
+}
+
+.tab-icon-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.tab-icon {
+  width: 32rpx;
+  height: 32rpx;
+  color: #78716C;
+  transition: color 0.25s ease;
+}
+
+.tab-label {
+  font-size: 24rpx;
+  font-weight: 800;
+  color: #78716C;
+  transition: color 0.25s ease;
+}
+
+/* # 激活态 (磁吸浮升 + 琥珀流光) */
+.tab-item.active .tab-icon-wrap {
+  transform: translateY(-2rpx) scale(1.08);
+}
+
+.tab-item.active .tab-icon {
+  color: #F59E0B;
+}
+
+.tab-item.active .tab-label {
+  color: #FFFFFF;
+}
+
+.tab-item:active {
+  opacity: 0.88;
+}

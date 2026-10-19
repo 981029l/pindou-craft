@@ -1,0 +1,1016 @@
+/* # 我的中心样式 - 画廊级多巴胺手作轻奢 */
+@import "../../styles/icons.wxss";
+
+.mine-container {
+  padding: 24rpx 28rpx calc(40rpx + env(safe-area-inset-bottom));
+}
+
+/* # 1. 个人卡片 */
+.profile-card {
+  padding: 32rpx 28rpx;
+  margin-bottom: 28rpx;
+}
+
+.profile-header-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16rpx;
+  margin-bottom: 24rpx;
+}
+
+.profile-header {
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+  flex: 1;
+  min-width: 0;
+}
+
+.avatar-ring {
+  width: 96rpx;
+  height: 96rpx;
+  border-radius: 999rpx;
+  background: #FFFBEB;
+  border: 2rpx solid #FDE68A;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4rpx 16rpx rgba(245, 158, 11, 0.12);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.avatar-img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+}
+
+.profile-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+  flex: 1;
+  min-width: 0;
+}
+
+.name-row {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  white-space: nowrap !important;
+}
+
+.user-nickname {
+  font-size: 32rpx;
+  font-weight: 900;
+  color: #1C1917;
+  white-space: nowrap !important;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex-shrink: 1;
+}
+
+.creator-level-badge {
+  background: linear-gradient(135deg, #FFFBEB, #FEF3C7);
+  border: 1rpx solid #FDE68A;
+  color: #B45309;
+  font-size: 18rpx;
+  font-weight: 800;
+  padding: 4rpx 12rpx;
+  border-radius: 999rpx;
+  white-space: nowrap !important;
+  flex-shrink: 0;
+}
+
+.profile-sync-tip {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  white-space: nowrap !important;
+}
+
+.sync-dot {
+  width: 10rpx;
+  height: 10rpx;
+  border-radius: 50%;
+  background: #10B981;
+  flex-shrink: 0;
+}
+
+.sync-text {
+  font-size: 20rpx;
+  color: #78716C;
+  font-weight: 700;
+  white-space: nowrap !important;
+}
+
+/* # 分享创作者名片微按钮 (强力清除微信 184px 霸王宽度) */
+.btn-share-profile {
+  width: 148rpx !important;
+  min-width: unset !important;
+  max-width: 148rpx !important;
+  height: 56rpx !important;
+  line-height: 56rpx !important;
+  background: #FFFBEB;
+  border: 1rpx solid #FDE68A;
+  color: #B45309;
+  font-size: 20rpx;
+  font-weight: 800;
+  padding: 0 !important;
+  border-radius: 999rpx;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  margin: 0 !important;
+  flex-shrink: 0;
+  white-space: nowrap !important;
+  box-sizing: border-box;
+}
+
+.btn-share-profile::after {
+  border: none !important;
+}
+
+/* # 统计栏 */
+.stats-deck {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  background: #FAFAF9;
+  border-radius: 20rpx;
+  padding: 18rpx 0;
+  border: 1rpx solid #F5F5F4;
+}
+
+.stat-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  padding: 4rpx 16rpx;
+  transition: opacity 0.15s;
+}
+
+.stat-box:active {
+  opacity: 0.7;
+}
+
+.stat-num {
+  font-size: 34rpx;
+  font-family: monospace;
+  font-weight: 900;
+  color: #1C1917;
+}
+
+.highlight-green {
+  color: #15803D !important;
+}
+
+.highlight-amber {
+  color: #D97706 !important;
+}
+
+.stat-label-row {
+  display: flex;
+  align-items: center;
+  gap: 4rpx;
+  margin-top: 2rpx;
+}
+
+.stat-label {
+  font-size: 20rpx;
+  color: #78716C;
+  font-weight: 700;
+}
+
+.stat-micro-chevron {
+  width: 16rpx;
+  height: 16rpx;
+  color: #A8A29E;
+}
+
+.stat-divider {
+  width: 1rpx;
+  height: 36rpx;
+  background: #E7E5E4;
+}
+
+/* # 2. 创作空间核心导航卡 (大厂轻奢微卡片) */
+.gallery-nav-card {
+  margin-bottom: 24rpx;
+  padding: 24rpx 28rpx;
+  background: #FFFFFF;
+  border-radius: 28rpx;
+  border: 1rpx solid #F0EEE9;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.03);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.gallery-nav-card:active {
+  transform: scale(0.99);
+  background: #FAF8F5;
+}
+
+.nav-card-left {
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+}
+
+.nav-icon-badge {
+  width: 76rpx;
+  height: 76rpx;
+  border-radius: 20rpx;
+  background: #FEF3C7;
+  border: 1rpx solid #FDE68A;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.nav-text-col {
+  display: flex;
+  flex-direction: column;
+}
+
+.nav-title-row {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+
+.nav-title {
+  font-size: 28rpx;
+  font-weight: 900;
+  color: #1C1917;
+}
+
+.nav-badge-pill {
+  font-size: 20rpx;
+  font-weight: 800;
+  color: #92400E;
+  background: #FEF3C7;
+  padding: 2rpx 12rpx;
+  border-radius: 999rpx;
+  border: 1rpx solid #FDE68A;
+}
+
+.nav-subtitle {
+  font-size: 20rpx;
+  color: #78716C;
+  margin-top: 4rpx;
+}
+
+.nav-card-right {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  flex-shrink: 0;
+}
+
+.nav-action-label {
+  font-size: 22rpx;
+  font-weight: 800;
+  color: #B45309;
+}
+
+.nav-arrow {
+  font-size: 22rpx;
+  color: #D97706;
+}
+
+.project-card {
+  padding: 24rpx;
+  margin-bottom: 0;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.03);
+}
+
+.project-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 20rpx;
+}
+
+.project-title-area {
+  display: flex;
+  flex-direction: column;
+  gap: 10rpx;
+}
+
+.project-name {
+  font-size: 30rpx;
+  font-weight: 800;
+  color: #1C1917;
+}
+
+.project-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 10rpx;
+}
+
+.meta-chip-brand {
+  background: #FEF3C7;
+  color: #92400E;
+  font-size: 20rpx;
+  font-weight: 800;
+  padding: 4rpx 12rpx;
+  border-radius: 8rpx;
+}
+
+.meta-chip-size {
+  background: #F5F5F4;
+  color: #57534E;
+  font-size: 20rpx;
+  font-weight: 800;
+  font-family: monospace;
+  padding: 4rpx 12rpx;
+  border-radius: 8rpx;
+}
+
+.meta-date {
+  font-size: 20rpx;
+  color: #A8A29E;
+}
+
+.status-badge {
+  padding: 6rpx 16rpx;
+  border-radius: 999rpx;
+  font-size: 20rpx;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.status-badge.public {
+  background: #DCFCE7;
+  color: #15803D;
+}
+
+.status-badge.private {
+  background: #F5F5F4;
+  color: #78716C;
+}
+
+/* # 卡片中间画廊大图展示区 */
+.project-preview-stage {
+  width: 100%;
+  height: 420rpx;
+  background: #FAF8F5;
+  border-radius: 18rpx;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1rpx solid #F5F5F4;
+  margin: 16rpx 0 20rpx;
+  transition: opacity 0.15s;
+}
+
+.project-preview-stage:active {
+  opacity: 0.92;
+}
+
+.project-preview-thumb {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.project-preview-fallback {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 30rpx;
+}
+
+.fallback-tip {
+  font-size: 22rpx;
+  color: #A8A29E;
+  font-weight: 700;
+}
+
+/* # 操作栏 (单行防折行 + 等宽方形删除键) */
+.project-actions-bar {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  padding-top: 18rpx;
+  border-top: 1rpx solid #F5F5F4;
+}
+
+.btn-card-action {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 68rpx;
+  border-radius: 14rpx;
+  font-size: 23rpx;
+  font-weight: 800;
+  white-space: nowrap;
+  padding: 0 14rpx;
+  margin: 0;
+  box-sizing: border-box;
+  transition: all 0.15s;
+}
+
+.btn-load-action {
+  background: #FAFAF9;
+  border: 1rpx solid #E7E5E4;
+  color: #1C1917;
+}
+
+.btn-pub-action {
+  background: #FFFBEB;
+  border: 1rpx solid #FDE68A;
+  color: #B45309;
+}
+
+.btn-pub-action.unpub {
+  background: #F5F5F4;
+  border: 1rpx solid #E7E5E4;
+  color: #78716C;
+}
+
+.btn-card-delete {
+  flex: 0 0 68rpx;
+  width: 68rpx;
+  height: 68rpx;
+  border-radius: 14rpx;
+  background: #FEF2F2;
+  border: 1rpx solid #FECACA;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+  transition: all 0.15s;
+}
+
+.btn-hover {
+  transform: scale(0.96);
+  opacity: 0.9;
+}
+
+
+
+/* # 空状态 */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80rpx 40rpx;
+  text-align: center;
+  margin-bottom: 24rpx;
+}
+
+.empty-icon-circle {
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: 999rpx;
+  background: #FFFFFF;
+  border: 1rpx solid #E7E5E4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20rpx;
+  box-shadow: 0 6rpx 20rpx rgba(0, 0, 0, 0.04);
+}
+
+.empty-title {
+  font-size: 30rpx;
+  font-weight: 800;
+  color: #292524;
+  margin-bottom: 8rpx;
+}
+
+.empty-desc {
+  font-size: 22rpx;
+  color: #A8A29E;
+  line-height: 1.6;
+}
+
+/* # 4. 设置与合规卡片 */
+.settings-card {
+  padding: 8rpx 28rpx;
+  margin-bottom: 24rpx;
+}
+
+.settings-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24rpx 0;
+  transition: opacity 0.15s;
+}
+
+.settings-item:active {
+  opacity: 0.6;
+}
+
+.settings-left {
+  display: flex;
+  align-items: center;
+}
+
+.settings-title {
+  font-size: 26rpx;
+  font-weight: 800;
+  color: #292524;
+}
+
+.settings-arrow {
+  font-size: 22rpx;
+  color: #A8A29E;
+}
+
+.settings-val-tag {
+  font-size: 22rpx;
+  font-weight: 800;
+  color: #78716C;
+  background: #F5F5F4;
+  padding: 4rpx 14rpx;
+  border-radius: 8rpx;
+}
+
+.settings-version-pill {
+  font-size: 22rpx;
+  font-family: monospace;
+  font-weight: 900;
+  color: #0284C7;
+  background: #F0F9FF;
+  border: 1rpx solid #E0F2FE;
+  padding: 4rpx 16rpx;
+  border-radius: 999rpx;
+}
+
+.settings-divider {
+  width: 100%;
+  height: 1rpx;
+  background: #F5F5F4;
+}
+
+/* # 4. 账户动态专属操作条 */
+.account-action-wrap {
+  margin-bottom: 36rpx;
+}
+
+.btn-account-action {
+  width: 100% !important;
+  height: 92rpx;
+  border-radius: 999rpx;
+  font-size: 28rpx;
+  font-weight: 900;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  margin: 0 !important;
+  transition: all 0.15s;
+  box-sizing: border-box;
+}
+
+.btn-account-action::after {
+  border: none !important;
+}
+
+/* # 退出登录状态 (红字红边) */
+.btn-logout-action {
+  background: #FEF2F2;
+  border: 1rpx solid #FEE2E2;
+  color: #DC2626;
+}
+
+.btn-logout-action:active {
+  background: #FEE2E2;
+  transform: scale(0.985);
+}
+
+/* # 游客快捷登录状态 (官方微信绿高光) */
+.btn-login-action {
+  background: #07C160;
+  color: #FFFFFF;
+  box-shadow: 0 8rpx 24rpx rgba(7, 193, 96, 0.35);
+}
+
+.btn-login-action:active {
+  background: #06AD56;
+  transform: scale(0.985);
+}
+
+/* # 5. 极简轻奢品牌页脚 */
+.mine-footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8rpx;
+  padding: 20rpx 0 60rpx;
+}
+
+.footer-brand {
+  font-size: 24rpx;
+  font-weight: 900;
+  color: #A8A29E;
+  letter-spacing: 2rpx;
+}
+
+.footer-slogan {
+  font-size: 18rpx;
+  color: #D6D3D1;
+  font-weight: 700;
+}
+
+/* # 创作者状态微标 */
+.creator-level-badge.unlogged {
+  background: #F5F5F4;
+  border-color: #E7E5E4;
+  color: #78716C;
+}
+
+.sync-dot.online {
+  background: #10B981;
+}
+
+.sync-dot.offline {
+  background: #A8A29E;
+}
+
+.btn-login-pill {
+  background: #1C1917 !important;
+  border-color: #1C1917 !important;
+  color: #FFFFFF !important;
+}
+
+/* # 6. 微信官方最新标准登录授权弹窗 (chooseAvatar + type="nickname") */
+.auth-modal-mask {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 999999;
+}
+
+.auth-modal-sheet {
+  width: 100%;
+  background: #FFFFFF;
+  border-top-left-radius: 44rpx;
+  border-top-right-radius: 44rpx;
+  padding: 44rpx 36rpx calc(40rpx + env(safe-area-inset-bottom));
+  box-sizing: border-box;
+  box-shadow: 0 -12rpx 48rpx rgba(0, 0, 0, 0.15);
+  animation: authSlideUp 0.28s cubic-bezier(0.33, 1, 0.68, 1);
+}
+
+@keyframes authSlideUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.auth-sheet-header {
+  display: flex;
+  align-items: center;
+  gap: 18rpx;
+  margin-bottom: 32rpx;
+}
+
+.auth-app-logo {
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: 22rpx;
+  background: #FFFBEB;
+  border: 1rpx solid #FDE68A;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.auth-title-col {
+  display: flex;
+  flex-direction: column;
+  gap: 6rpx;
+}
+
+.auth-main-title {
+  font-size: 32rpx;
+  font-weight: 900;
+  color: #1C1917;
+}
+
+.auth-sub-title {
+  font-size: 22rpx;
+  color: #78716C;
+  font-weight: 700;
+}
+
+.auth-form-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 22rpx 20rpx;
+  background: #FAFAF9;
+  border-radius: 20rpx;
+  border: 1rpx solid #F5F5F4;
+  margin-bottom: 20rpx;
+}
+
+.form-label {
+  font-size: 26rpx;
+  font-weight: 800;
+  color: #44403C;
+  flex-shrink: 0;
+}
+
+.avatar-choose-btn {
+  display: flex !important;
+  align-items: center;
+  gap: 12rpx;
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  line-height: normal !important;
+  height: auto !important;
+}
+
+.avatar-choose-btn::after {
+  border: none !important;
+}
+
+.avatar-choose-img {
+  width: 72rpx;
+  height: 72rpx;
+  border-radius: 50%;
+  border: 2rpx solid #FDE68A;
+}
+
+.avatar-choose-placeholder {
+  width: 72rpx;
+  height: 72rpx;
+  border-radius: 50%;
+  background: #FFFBEB;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.avatar-choose-badge {
+  font-size: 22rpx;
+  color: #0284C7;
+  font-weight: 800;
+}
+
+.auth-nickname-input {
+  flex: 1;
+  text-align: right;
+  font-size: 26rpx;
+  color: #1C1917;
+  font-weight: 800;
+  padding-left: 20rpx;
+}
+
+/* # 微信昵称智能提示与快速点选条 */
+.nickname-guide-bar {
+  margin: -10rpx 0 20rpx;
+  padding: 14rpx 18rpx;
+  background: #F0F9FF;
+  border-radius: 16rpx;
+  border: 1rpx solid #E0F2FE;
+  display: flex;
+  flex-direction: column;
+  gap: 10rpx;
+}
+
+.guide-tip-row {
+  display: flex;
+  align-items: center;
+}
+
+.guide-tip-text {
+  font-size: 20rpx;
+  color: #0369A1;
+  font-weight: 700;
+}
+
+.quick-nick-row {
+  display: flex;
+  align-items: center;
+  gap: 10rpx;
+  flex-wrap: wrap;
+}
+
+.quick-nick-label {
+  font-size: 20rpx;
+  color: #78716C;
+  font-weight: 700;
+}
+
+.quick-nick-tag {
+  font-size: 20rpx;
+  font-weight: 800;
+  color: #1C1917;
+  background: #FFFFFF;
+  border: 1rpx solid #BAE6FD;
+  padding: 4rpx 14rpx;
+  border-radius: 999rpx;
+  box-shadow: 0 2rpx 8rpx rgba(2, 132, 199, 0.08);
+  transition: all 0.15s;
+}
+
+.quick-nick-tag:active {
+  background: #E0F2FE;
+  transform: scale(0.96);
+}
+
+/* # 协议勾选行 */
+.auth-agreement-row {
+  display: flex;
+  align-items: center;
+  gap: 14rpx;
+  margin: 28rpx 4rpx 32rpx;
+  cursor: pointer;
+}
+
+.agreement-box {
+  width: 32rpx;
+  height: 32rpx;
+  border-radius: 8rpx;
+  border: 2rpx solid #D6D3D1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.15s;
+}
+
+.agreement-box.checked {
+  background: #07C160;
+  border-color: #07C160;
+}
+
+.agreement-check-mark {
+  color: #FFFFFF;
+  font-size: 22rpx;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.agreement-text-wrap {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  font-size: 22rpx;
+  color: #78716C;
+  line-height: 1.5;
+}
+
+.agreement-plain {
+  color: #78716C;
+}
+
+.agreement-link {
+  color: #0284C7;
+  font-weight: 800;
+}
+
+/* # 确认微信授权登录按钮 (官方绿) */
+.btn-auth-confirm {
+  width: 100% !important;
+  height: 92rpx;
+  background: #07C160;
+  color: #FFFFFF;
+  font-size: 30rpx;
+  font-weight: 900;
+  border-radius: 999rpx;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8rpx 24rpx rgba(7, 193, 96, 0.35);
+  margin-bottom: 20rpx !important;
+  transition: all 0.15s;
+}
+
+.btn-auth-confirm:active {
+  background: #06AD56;
+  transform: scale(0.985);
+}
+
+.btn-auth-confirm::after {
+  border: none !important;
+}
+
+.auth-cancel-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10rpx 0;
+}
+
+.auth-cancel-text {
+  font-size: 22rpx;
+  color: #A8A29E;
+  font-weight: 700;
+}
+
+/* # 7. 协议阅读弹窗 */
+.policy-modal-mask {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000000;
+  padding: 40rpx;
+  box-sizing: border-box;
+}
+
+.policy-modal-box {
+  width: 100%;
+  max-height: 80vh;
+  background: #FFFFFF;
+  border-radius: 32rpx;
+  padding: 36rpx;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20rpx 60rpx rgba(0, 0, 0, 0.2);
+}
+
+.policy-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24rpx;
+}
+
+.policy-modal-title {
+  font-size: 30rpx;
+  font-weight: 900;
+  color: #1C1917;
+}
+
+.policy-close-btn {
+  width: 50rpx;
+  height: 50rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 40rpx;
+  color: #78716C;
+}
+
+.policy-modal-body {
+  max-height: 50vh;
+  margin-bottom: 28rpx;
+}
+
+.policy-text {
+  font-size: 24rpx;
+  color: #44403C;
+  line-height: 1.7;
+  white-space: pre-wrap;
+}
+
+.btn-policy-agree {
+  width: 100% !important;
+  height: 84rpx;
+  background: #1C1917;
+  color: #FFFFFF;
+  font-size: 28rpx;
+  font-weight: 800;
+  border-radius: 999rpx;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  margin: 0 !important;
+}
+
+.btn-policy-agree::after {
+  border: none !important;
+}
+
+
+

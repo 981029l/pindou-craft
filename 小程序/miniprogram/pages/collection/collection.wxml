@@ -1,0 +1,154 @@
+<!-- # 二级全量图纸作品库 - 双轨流体工坊管理 -->
+<view class="collection-container">
+  <!-- # 1. 顶层搜索与检索栏 -->
+  <view class="search-sticky-bar">
+    <view class="search-input-box">
+      <text class="icon-lucide icon-search" style="color: #78716C; width: 30rpx; height: 30rpx; margin-right: 12rpx;"></text>
+      <input 
+        class="search-input" 
+        placeholder="搜索作品名称..." 
+        value="{{searchQuery}}"
+        bindinput="onSearchInput"
+        confirm-type="search"
+      />
+      <view wx:if="{{searchQuery.length > 0}}" class="clear-btn" bindtap="onClearSearch">
+        <text class="icon-lucide icon-x" style="width: 22rpx; height: 22rpx; color: #78716C;"></text>
+      </view>
+    </view>
+  </view>
+
+  <!-- # 2. 分类筛选胶囊 -->
+  <view class="filter-pills-row">
+    <view class="filter-pill {{activeFilter === 'all' ? 'active' : ''}}" bindtap="onSwitchFilter" data-filter="all">
+      <text>全部 ({{allCount}})</text>
+    </view>
+    <view class="filter-pill {{activeFilter === 'public' ? 'active' : ''}}" bindtap="onSwitchFilter" data-filter="public">
+      <text>社区公开 ({{publicCount}})</text>
+    </view>
+    <view class="filter-pill {{activeFilter === 'private' ? 'active' : ''}}" bindtap="onSwitchFilter" data-filter="private">
+      <text>私密存档 ({{privateCount}})</text>
+    </view>
+  </view>
+
+  <!-- # 3. 双轨流体瀑布流卡片列表 -->
+  <view wx:if="{{displayedList.length > 0}}" class="collection-waterfall">
+    <!-- # 左列 -->
+    <view class="waterfall-col">
+      <view 
+        wx:for="{{leftList}}" 
+        wx:key="_id" 
+        class="artisan-card col-card"
+      >
+        <!-- # 卡片置顶缩略图 -->
+        <view class="col-thumb-stage" bindtap="onPreviewThumb" data-id="{{item._id}}" data-index="{{index}}" data-col="left">
+          <image 
+            wx:if="{{item.displayThumb || item.previewUrl}}" 
+            class="col-thumb-img" 
+            src="{{item.displayThumb || item.previewUrl}}" 
+            mode="widthFix"
+            lazy-load
+          ></image>
+          <view wx:else class="col-thumb-fallback">
+            <text class="icon-lucide icon-palette" style="color: #F59E0B; width: 38rpx; height: 38rpx;"></text>
+          </view>
+          <view class="col-status-pill {{item.isPublic ? 'public' : 'private'}}">
+            <text>{{item.isPublic ? '公开' : '私密'}}</text>
+          </view>
+        </view>
+
+        <!-- # 卡片主体信息 -->
+        <view class="col-info-area">
+          <text class="col-pattern-name">{{item.displayName}}</text>
+          <view class="col-meta-row">
+            <text class="col-chip-brand">{{item.paletteBrand || 'MARD'}}</text>
+            <text class="col-chip-size">{{item.displaySize}}</text>
+          </view>
+
+          <!-- # 快捷操作栏 (轻奢触控胶囊，杜绝微信原生 button 撑爆) -->
+          <view class="col-actions-row">
+            <view class="col-action-btn load-btn" catchtap="onLoadPattern" data-id="{{item._id}}">
+              <text class="icon-lucide icon-palette" style="color: #1C1917; width: 20rpx; height: 20rpx; margin-right: 4rpx;"></text>
+              <text>开拼</text>
+            </view>
+            <view class="col-action-btn pub-btn {{item.isPublic ? 'unpub' : ''}}" catchtap="onTogglePublish" data-id="{{item._id}}" data-public="{{item.isPublic}}">
+              <text>{{item.isPublic ? '私密' : '公开'}}</text>
+            </view>
+            <view class="col-delete-btn" catchtap="onDeletePattern" data-id="{{item._id}}">
+              <text class="icon-lucide icon-trash" style="color: #DC2626; width: 22rpx; height: 22rpx;"></text>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- # 右列 -->
+    <view class="waterfall-col">
+      <view 
+        wx:for="{{rightList}}" 
+        wx:key="_id" 
+        class="artisan-card col-card"
+      >
+        <!-- # 卡片置顶缩略图 -->
+        <view class="col-thumb-stage" bindtap="onPreviewThumb" data-id="{{item._id}}" data-index="{{index}}" data-col="right">
+          <image 
+            wx:if="{{item.displayThumb || item.previewUrl}}" 
+            class="col-thumb-img" 
+            src="{{item.displayThumb || item.previewUrl}}" 
+            mode="widthFix"
+            lazy-load
+          ></image>
+          <view wx:else class="col-thumb-fallback">
+            <text class="icon-lucide icon-palette" style="color: #F59E0B; width: 38rpx; height: 38rpx;"></text>
+          </view>
+          <view class="col-status-pill {{item.isPublic ? 'public' : 'private'}}">
+            <text>{{item.isPublic ? '公开' : '私密'}}</text>
+          </view>
+        </view>
+
+        <!-- # 卡片主体信息 -->
+        <view class="col-info-area">
+          <text class="col-pattern-name">{{item.displayName}}</text>
+          <view class="col-meta-row">
+            <text class="col-chip-brand">{{item.paletteBrand || 'MARD'}}</text>
+            <text class="col-chip-size">{{item.displaySize}}</text>
+          </view>
+
+          <!-- # 快捷操作栏 (轻奢触控胶囊，杜绝微信原生 button 撑爆) -->
+          <view class="col-actions-row">
+            <view class="col-action-btn load-btn" catchtap="onLoadPattern" data-id="{{item._id}}">
+              <text class="icon-lucide icon-palette" style="color: #1C1917; width: 20rpx; height: 20rpx; margin-right: 4rpx;"></text>
+              <text>开拼</text>
+            </view>
+            <view class="col-action-btn pub-btn {{item.isPublic ? 'unpub' : ''}}" catchtap="onTogglePublish" data-id="{{item._id}}" data-public="{{item.isPublic}}">
+              <text>{{item.isPublic ? '私密' : '公开'}}</text>
+            </view>
+            <view class="col-delete-btn" catchtap="onDeletePattern" data-id="{{item._id}}">
+              <text class="icon-lucide icon-trash" style="color: #DC2626; width: 22rpx; height: 22rpx;"></text>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- # 4. 空状态 (居中多巴胺微光美学 + 上下文智能行动纽) -->
+  <view wx:else class="empty-state">
+    <view class="empty-icon-circle">
+      <text class="icon-lucide {{searchQuery ? 'icon-search' : (allCount === 0 ? 'icon-sparkles' : 'icon-cloud')}}" style="width: 56rpx; height: 56rpx; color: {{allCount === 0 ? '#D97706' : '#0284C7'}};"></text>
+    </view>
+    <text class="empty-title">{{searchQuery ? '未搜索到相关图纸' : (allCount === 0 ? '手作图库尚无作品' : (activeFilter === 'public' ? '暂无社区公开图纸' : '暂无私密存档图纸'))}}</text>
+    <text class="empty-desc">{{searchQuery ? '换个名称关键词试试，或前往工作台制作新拼豆并存入图库' : (allCount === 0 ? '前往工作台制作并保存您的首幅拼豆图纸，开启手作艺术之旅！' : '在全部图纸中点击卡片右下角的“公开”或“私密”按钮，即可随时切换分享状态')}}</text>
+    
+    <!-- 智能操作引导按钮 -->
+    <view wx:if="{{searchQuery}}" class="empty-action-btn" bindtap="onClearSearch">
+      <text>清空搜索关键词</text>
+    </view>
+    <view wx:elif="{{activeFilter !== 'all' && allCount > 0}}" class="empty-action-btn" bindtap="onResetFilterToAll">
+      <text>查看全部 ({{allCount}}幅)</text>
+    </view>
+    <view wx:else class="empty-action-btn primary" bindtap="onGoToWorkbench">
+      <text class="icon-lucide icon-sparkles" style="width: 24rpx; height: 24rpx; margin-right: 8rpx; color: #FFFFFF;"></text>
+      <text>前往工作台创作</text>
+    </view>
+  </view>
+</view>

@@ -1,0 +1,246 @@
+<!-- # 图纸作品详情页 - 画廊级多巴胺手作轻奢 -->
+<view class="detail-container">
+  <!-- # 1. 高清画廊效果图展示卡片 -->
+  <view class="artisan-card gallery-preview-card">
+    <view class="preview-stage" bindtap="onPreviewFullImage">
+      <image 
+        wx:if="{{pattern.previewUrl}}" 
+        class="preview-main-img" 
+        src="{{pattern.previewUrl}}" 
+        mode="aspectFit"
+      ></image>
+      <view wx:else class="preview-fallback-box" hidden="{{showWechatLoginSheet}}">
+        <canvas type="2d" id="detailPreviewCanvas" class="detail-native-canvas"></canvas>
+      </view>
+      <view class="preview-actions-overlay">
+        <view class="preview-action-pill" catchtap="onPreviewFullImage">
+          <text class="icon-lucide icon-sparkles" style="width: 22rpx; height: 22rpx; margin-right: 6rpx;"></text>
+          <text>双指放大</text>
+        </view>
+        <view class="preview-action-pill" catchtap="onSaveToAlbum">
+          <text class="icon-lucide icon-download" style="width: 22rpx; height: 22rpx; margin-right: 6rpx;"></text>
+          <text>保存相册</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- # 2. 图纸基本信息与作者名片 -->
+  <view class="artisan-card info-card">
+    <view class="pattern-header-row">
+      <view class="header-text-area">
+        <text class="pattern-headline">{{pattern.name || '拼豆手作图纸'}}</text>
+        <text class="publish-time-badge">{{pattern.createTimeFormatted}} 发布</text>
+      </view>
+      <view class="status-pill {{pattern.isPublic ? 'public' : 'private'}}">
+        <text>{{pattern.isPublic ? '社区公开' : '创作者私密'}}</text>
+      </view>
+    </view>
+
+    <!-- # 作者信息卡片 -->
+    <view class="author-card-row">
+      <view class="author-avatar-wrap">
+        <image wx:if="{{pattern.authorAvatar}}" class="author-avatar-img" src="{{pattern.authorAvatar}}"></image>
+        <view wx:else class="author-avatar-placeholder">
+          <text class="icon-lucide icon-palette" style="color: #F59E0B; width: 34rpx; height: 34rpx;"></text>
+        </view>
+      </view>
+      <view class="author-info-text">
+        <text class="author-name">{{pattern.authorName || '拼豆创作者'}}</text>
+        <text class="author-label">原版图纸手作人</text>
+      </view>
+    </view>
+
+    <!-- # 核心规格与热度矩阵 -->
+    <view class="stats-deck">
+      <view class="stat-cell">
+        <text class="stat-value">{{pattern.width}}×{{pattern.height}}</text>
+        <text class="stat-name">插板规格</text>
+      </view>
+      <view class="stat-separator"></view>
+      <view class="stat-cell">
+        <text class="stat-value">{{pattern.paletteBrand || 'MARD'}}</text>
+        <text class="stat-name">标准色卡</text>
+      </view>
+      <view class="stat-separator"></view>
+      <view class="stat-cell">
+        <text class="stat-value highlight-amber">{{pattern.likes || 0}}</text>
+        <text class="stat-name">社区获赞</text>
+      </view>
+      <view class="stat-separator"></view>
+      <view class="stat-cell">
+        <text class="stat-value highlight-green">{{pattern.downloads || 0}}</text>
+        <text class="stat-name">开拼下载</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- # 3. 评论讨论区 -->
+  <view class="artisan-card comments-card">
+    <view class="comments-header">
+      <view class="comments-title-wrap">
+        <text class="icon-lucide icon-sparkles" style="color: #F59E0B; margin-right: 8rpx; width: 28rpx; height: 28rpx;"></text>
+        <text class="comments-title">创作探讨</text>
+      </view>
+      <text class="comments-count">共 {{commentsList.length}} 条</text>
+    </view>
+
+    <!-- # 评论列表 -->
+    <view wx:if="{{commentsList.length > 0}}" class="comments-list">
+      <view wx:for="{{commentsList}}" wx:key="id" class="comment-item">
+        <view class="comment-user-avatar">
+          <image wx:if="{{item.authorAvatar}}" class="comment-avatar-img" src="{{item.authorAvatar}}"></image>
+          <view wx:else class="comment-avatar-default">
+            <text class="icon-lucide icon-palette" style="color: #78716C; width: 24rpx; height: 24rpx;"></text>
+          </view>
+        </view>
+        <view class="comment-body">
+          <view class="comment-top">
+            <text class="comment-author-name">{{item.authorName || '拼豆玩家'}}</text>
+            <text class="comment-time">{{item.timeFormatted}}</text>
+          </view>
+          <text class="comment-content">{{item.content}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- # 空评论提示 (工坊手作探讨微光气泡) -->
+    <view wx:else class="empty-comments">
+      <view class="empty-comment-icon-wrap">
+        <text class="icon-lucide icon-sparkles" style="width: 30rpx; height: 30rpx; color: #D97706;"></text>
+      </view>
+      <text class="empty-comment-text">暂无手作心得，抢先发表首条灵感探讨吧～</text>
+    </view>
+
+    <!-- # 发送评论输入栏 -->
+    <view class="comment-input-bar">
+      <input 
+        class="comment-input" 
+        placeholder="写下您的手作灵感或提问..." 
+        placeholder-class="comment-placeholder"
+        value="{{commentText}}"
+        bindinput="onCommentInput"
+        maxlength="300"
+      />
+      <button class="btn-send-comment {{commentText.length > 0 ? 'active' : ''}}" bindtap="onSubmitComment">
+        <text>发表</text>
+      </button>
+    </view>
+  </view>
+
+  <!-- # 4. 底部固定操作坞 (点赞 + 保存相册 + 载入工作台) -->
+  <view class="detail-bottom-dock">
+    <view class="dock-secondary-btn {{isLiked ? 'liked' : ''}}" bindtap="onToggleLike">
+      <text class="icon-lucide icon-sparkles" style="color: {{isLiked ? '#F59E0B' : '#78716C'}}; width: 30rpx; height: 30rpx; margin-right: 6rpx;"></text>
+      <text class="dock-btn-text">{{isLiked ? '已赞' : '点赞'}} ({{pattern.likes || 0}})</text>
+    </view>
+
+    <view class="dock-secondary-btn" bindtap="onSaveToAlbum">
+      <text class="icon-lucide icon-download" style="color: #44403C; width: 30rpx; height: 30rpx; margin-right: 6rpx;"></text>
+      <text class="dock-btn-text">下载相册</text>
+    </view>
+
+    <button class="btn-glow-primary dock-load-btn" bindtap="onLoadToWorkbench">
+      <text class="icon-lucide icon-palette" style="color: #FFFFFF; width: 30rpx; height: 30rpx; margin-right: 8rpx;"></text>
+      <text>载入工作台</text>
+    </button>
+  </view>
+
+  <!-- # 5. 微信官方最新标准登录授权弹窗 (chooseAvatar + type="nickname") -->
+  <view wx:if="{{showWechatLoginSheet}}" class="wechat-login-mask" bindtap="onCloseWechatLogin">
+    <view class="wechat-login-sheet" catchtap="preventBubble">
+      <view class="wechat-sheet-header">
+        <view class="wechat-app-logo">
+          <text class="icon-lucide icon-sparkles" style="color: #F59E0B; width: 44rpx; height: 44rpx;"></text>
+        </view>
+        <view class="wechat-sheet-title-col">
+          <text class="wechat-app-title">PinDou 拼豆工坊</text>
+          <text class="wechat-app-desc">申请获取您的头像与昵称用于社区手作互动</text>
+        </view>
+      </view>
+
+      <!-- 头像选用 (微信官方 chooseAvatar) -->
+      <view class="auth-form-item">
+        <text class="form-label">创作者头像</text>
+        <button class="avatar-choose-btn" open-type="chooseAvatar" bindchooseavatar="onChooseAvatar">
+          <image wx:if="{{tempAvatarUrl}}" class="avatar-choose-img" src="{{tempAvatarUrl}}"></image>
+          <view wx:else class="avatar-choose-placeholder">
+            <text class="icon-lucide icon-palette" style="color: #F59E0B; width: 40rpx; height: 40rpx;"></text>
+          </view>
+          <view class="avatar-choose-badge">
+            <text class="icon-lucide icon-camera" style="width: 24rpx; height: 24rpx; margin-right: 6rpx; color: #0284C7;"></text>
+            <text>点选头像</text>
+          </view>
+        </button>
+      </view>
+
+      <!-- 昵称输入 (微信官方 type="nickname") -->
+      <view class="auth-form-item">
+        <text class="form-label">创作者昵称</text>
+        <input 
+          type="nickname" 
+          class="auth-nickname-input" 
+          placeholder="点击直接选用微信昵称" 
+          value="{{tempNickName}}"
+          bindinput="onNicknameInput"
+          bindblur="onNicknameBlur"
+          bindchange="onNicknameChange"
+        />
+      </view>
+
+      <!-- 微信昵称智能指引与快捷选用条 -->
+      <view class="nickname-guide-bar">
+        <view class="guide-tip-row">
+          <text class="icon-lucide icon-sparkles" style="color: #0284C7; width: 22rpx; height: 22rpx; margin-right: 6rpx;"></text>
+          <text class="guide-tip-text">真机点击输入框将自动浮现微信昵称气泡一键选用</text>
+        </view>
+        <view class="quick-nick-row">
+          <text class="quick-nick-label">快速选用：</text>
+          <view class="quick-nick-tag" catchtap="onSelectQuickNick" data-nick="手作艺术家">手作艺术家</view>
+          <view class="quick-nick-tag" catchtap="onSelectQuickNick" data-nick="拼豆匠人">拼豆匠人</view>
+          <view class="quick-nick-tag" catchtap="onSelectQuickNick" data-nick="像素手作师">像素手作师</view>
+        </view>
+      </view>
+
+      <!-- 协议勾选行 -->
+      <view class="auth-agreement-row" bindtap="onToggleAgreement">
+        <view class="agreement-box {{isAgreed ? 'checked' : ''}}">
+          <text wx:if="{{isAgreed}}" class="icon-lucide icon-check" style="width: 18rpx; height: 18rpx; color: #FFFFFF;"></text>
+        </view>
+        <view class="agreement-text-wrap">
+          <text class="agreement-plain">我已阅读并同意</text>
+          <text class="agreement-link" catchtap="onOpenPolicy" data-type="service">《用户服务协议》</text>
+          <text class="agreement-plain">与</text>
+          <text class="agreement-link" catchtap="onOpenPolicy" data-type="privacy">《隐私保护指引》</text>
+        </view>
+      </view>
+
+      <button class="btn-wechat-primary" bindtap="onConfirmAuthLogin">
+        <view class="wechat-logo-icon"></view>
+        <text>确认微信授权登录</text>
+      </button>
+
+      <view class="wechat-cancel-row" bindtap="onCloseWechatLogin">
+        <text class="wechat-cancel-text">暂不登录，仅浏览</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- # 6. 协议政策阅读弹窗 -->
+  <view wx:if="{{showPolicyModal}}" class="policy-modal-mask" bindtap="onClosePolicyModal">
+    <view class="policy-modal-box" catchtap="preventBubble">
+      <view class="policy-modal-header">
+        <text class="policy-modal-title">{{policyTitle}}</text>
+        <view class="policy-close-btn" bindtap="onClosePolicyModal">
+          <text class="icon-lucide icon-x" style="width: 24rpx; height: 24rpx; color: #78716C;"></text>
+        </view>
+      </view>
+      <scroll-view scroll-y class="policy-modal-body">
+        <text class="policy-text" user-select>{{policyContent}}</text>
+      </scroll-view>
+      <button class="btn-policy-agree" bindtap="onClosePolicyModal">
+        <text>我已理解并知晓</text>
+      </button>
+    </view>
+  </view>
+</view>
