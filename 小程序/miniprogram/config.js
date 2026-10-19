@@ -1,10 +1,10 @@
 // # 拼豆工坊自建后端环境配置文件
 const config = {
-  // # 1. 独立后端 API 基础请求路径 (走服务器 Nginx 80 端口)
-  API_BASE_URL: 'http://110.41.49.222/api',
+  // # 1. 独立后端 API 基础请求路径 (微信小程序正式规范: 生产环境必须使用 HTTPS)
+  API_BASE_URL: 'https://pindouapi.lvky.cn/api',
 
-  // # 2. 图片与静态资源访问基准地址
-  IMAGE_BASE_URL: 'http://110.41.49.222',
+  // # 2. 图片与静态资源访问基准地址 (HTTPS)
+  IMAGE_BASE_URL: 'https://pindouapi.lvky.cn',
 
   // # 辅助函数: 自动解析补齐图片完整 URL
   formatImageUrl(url) {
