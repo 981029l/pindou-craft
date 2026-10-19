@@ -1,5 +1,6 @@
 // # 拼豆工坊小程序首页逻辑
 const { processImageToGrid } = require('../../utils/imageProcessor.js');
+const api = require('../../utils/api.js');
 
 Page({
   data: {
@@ -392,15 +393,10 @@ Page({
   async onConfirmSaveToCloud() {
     if (this.data.isSavingCloud) return;
 
-    if (!wx.cloud) {
-      wx.showToast({ title: '请配置微信云开发环境', icon: 'none' });
-      return;
-    }
-
     const name = (this.data.patternNameInput || '').trim() || '未命名拼豆手作';
 
     this.setData({ isSavingCloud: true });
-    wx.showLoading({ title: '正在存入云端作品集...' });
+    wx.showLoading({ title: '正在存入作品集...' });
 
     let previewUrl = '';
     let tempPath = this.data.saveTempPreviewUrl;
@@ -417,11 +413,8 @@ Page({
 
     if (tempPath) {
       try {
-        const uploadRes = await wx.cloud.uploadFile({
-          cloudPath: `patterns_preview/pattern_${Date.now()}_${Math.random().toString(36).slice(2, 6)}.png`,
-          filePath: tempPath
-        });
-        previewUrl = uploadRes.fileID || '';
+        const uploadRes = await api.uploadImage(tempPath);
+        previewUrl = uploadRes.url || '';
       } catch (uploadErr) {
         console.warn('Preview upload skipped', uploadErr);
       }
@@ -431,19 +424,16 @@ Page({
     const cachedAuthorAvatar = wx.getStorageSync('pindou_user_avatar') || '';
 
     try {
-      const res = await wx.cloud.callFunction({
-        name: 'savePattern',
-        data: {
-          name,
-          gridData: this.data.gridData,
-          paletteBrand: this.data.paletteBrand,
-          width: this.data.gridWidth,
-          height: this.data.gridHeight,
-          previewUrl,
-          isPublic: this.data.isPublishCommunity,
-          authorName: cachedAuthorName,
-          authorAvatar: cachedAuthorAvatar
-        }
+      const res = await api.savePattern({
+        name,
+        gridData: this.data.gridData,
+        paletteBrand: this.data.paletteBrand,
+        width: this.data.gridWidth,
+        height: this.data.gridHeight,
+        previewUrl,
+        isPublic: this.data.isPublishCommunity,
+        authorName: cachedAuthorName,
+        authorAvatar: cachedAuthorAvatar
       });
 
       this.setData({
@@ -461,7 +451,7 @@ Page({
 
       wx.showModal({
         title: '保存成功',
-        content: `《${name}》已存入云端！是否前往【我的作品集】查看？`,
+        content: `《${name}》已存入作品集！是否前往【我的手作图库】查看？`,
         confirmText: '查看作品',
         confirmColor: '#F59E0B',
         cancelText: '留在工坊',
@@ -472,8 +462,8 @@ Page({
           }
         }
       });
-    } catch (err) {
-      console.error(err);
+    } catch (saveErr) {
+      console.error(saveErr);
       this.setData({ isSavingCloud: false });
       wx.hideLoading();
       try {
@@ -481,7 +471,10 @@ Page({
           wx.showTabBar({ animation: true });
         }
       } catch (e) {}
-      wx.showToast({ title: '保存失败，请检查云函数', icon: 'none' });
+      wx.showToast({
+        title: saveErr.message || '保存失败，请检查服务器网络',
+        icon: 'none'
+      });
     }
   },
 

@@ -1,4 +1,6 @@
-// # 拼豆工坊小程序主入口与云开发初始化
+// # 拼豆工坊小程序主入口 (自建独立后端模式)
+const api = require('./utils/api.js');
+
 App({
   globalData: {
     currentPattern: null, // # 当前编辑的图纸数据
@@ -7,17 +9,11 @@ App({
   },
 
   onLaunch() {
-    if (!wx.cloud) {
-      console.warn('当前基础库不支持云能力'); // # 基础库提示
-    } else {
-      try {
-        wx.cloud.init({
-          traceUser: true, // # 追踪用户访问记录
-        });
-      } catch (err) {
-        console.warn('云开发初始化异常', err); // # 容错保护
-      }
+    // # 冷启动时自动检测或静默换取自建后端登录 Token
+    if (!api.getToken()) {
+      api.login().catch(err => {
+        console.log('[App] 首次启动静默鉴权待就绪 (将在保存时触发):', err.message);
+      });
     }
   }
 });
-

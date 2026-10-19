@@ -3,6 +3,8 @@ const { getPaletteDataByBrand } = require('../../utils/paletteManager.js'); // #
 const { SERVICE_AGREEMENT, PRIVACY_POLICY } = require('../../utils/policyHelper.js'); // # 用户协议与隐私保护
 const { PRESET_MAP, PRESET_PATTERNS } = require('../../utils/presetPatterns.js'); // # 官方精选图纸底座
 const { generateGridThumbnail } = require('../../utils/thumbnailHelper.js'); // # 离屏缩略图引擎
+const api = require('../../utils/api.js');
+const config = require('../../config.js');
 
 Page({
   data: {
@@ -101,14 +103,10 @@ Page({
 
     this.setData({ loading: true });
     try {
-      const res = await wx.cloud.callFunction({
-        name: 'getPatternDetail',
-        data: { patternId: id }
-      });
-
-      const p = (res.result && res.result.data) || null;
+      const res = await api.getPatternDetail(id);
+      const p = res.data || null;
       if (!p) {
-        // # 云端未查到，兜底从精选图库取出对应题材图纸展示
+        // # 服务端未查到，兜底从精选图库取出对应题材图纸展示
         const fallbackPattern = PRESET_PATTERNS[0];
         this.loadPresetDetail(fallbackPattern, callback);
         return;
@@ -124,6 +122,7 @@ Page({
         height: h,
         name: p.name || '拼豆手作图纸',
         authorName: p.authorName || '拼豆创作者',
+        previewUrl: p.previewUrl ? config.formatImageUrl(p.previewUrl) : '',
         createTimeFormatted: `${d.getMonth() + 1}月${d.getDate()}日 ${d.getHours()}:${d.getMinutes() < 10 ? '0' : ''}${d.getMinutes()}`
       };
 
@@ -446,15 +445,8 @@ Page({
       wx.setStorageSync(`pindou_liked_${this.data.patternId}`, true);
       wx.showToast({ title: '点赞成功！', icon: 'success' });
 
-      if (!this.data.patternId.startsWith('preset_') && wx.cloud) {
-        try {
-          await wx.cloud.callFunction({
-            name: 'likePattern',
-            data: { patternId: this.data.patternId }
-          });
-        } catch (err) {
-          console.error(err);
-        }
+      if (!this.data.patternId.startsWith('preset_')) {
+        api.likePattern(this.data.patternId).catch(err => console.error(err));
       }
     });
   },
@@ -471,7 +463,7 @@ Page({
       wx.showLoading({ title: '正在发表...' });
 
       // # 官方预置图纸直接本地闭环追加评论
-      if (this.data.patternId.startsWith('preset_') || !wx.cloud) {
+      if (this.data.patternId.startsWith('preset_')) {
         setTimeout(() => {
           wx.hideLoading();
           const d = new Date();
@@ -492,27 +484,23 @@ Page({
       }
 
       try {
-        const res = await wx.cloud.callFunction({
-          name: 'addComment',
-          data: {
-            patternId: this.data.patternId,
-            content,
-            authorName: userInfo.nickname,
-            authorAvatar: userInfo.avatarUrl
-          }
+        const res = await api.addComment(this.data.patternId, {
+          content,
+          authorName: userInfo.nickname,
+          authorAvatar: userInfo.avatarUrl
         });
 
         wx.hideLoading();
-        if (res.result && res.result.success) {
+        if (res.success) {
           wx.showToast({ title: '评论成功！', icon: 'success' });
           this.setData({ commentText: '' });
           this.fetchDetail(this.data.patternId);
         } else {
-          wx.showToast({ title: '发表失败', icon: 'none' });
+          wx.showToast({ title: res.message || '发表失败', icon: 'none' });
         }
       } catch (err) {
         wx.hideLoading();
-        wx.showToast({ title: '网络异常', icon: 'none' });
+        wx.showToast({ title: err.message || '网络异常', icon: 'none' });
       }
     });
   },
@@ -529,12 +517,9 @@ Page({
     };
 
     // # 记录开拼下载量自增
-    try {
-      wx.cloud.callFunction({
-        name: 'recordDownload',
-        data: { patternId: this.data.patternId }
-      });
-    } catch (e) {}
+    if (!this.data.patternId.startsWith('preset_')) {
+      api.recordDownload(this.data.patternId).catch(() => {});
+    }
 
     wx.showToast({ title: '已载入工作台！', icon: 'success' });
     setTimeout(() => {

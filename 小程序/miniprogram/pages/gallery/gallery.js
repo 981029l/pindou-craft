@@ -1,4 +1,6 @@
-// # 作品集列表页面逻辑
+// # 作品集列表页面逻辑 (自建独立后端模式)
+const api = require('../../utils/api.js');
+
 Page({
   data: {
     patternList: [],
@@ -16,18 +18,10 @@ Page({
   },
 
   async fetchPatternList(callback) {
-    if (!wx.cloud) {
-      if (callback) callback();
-      return;
-    }
-
     this.setData({ loading: true });
     try {
-      const res = await wx.cloud.callFunction({
-        name: 'getPatternList'
-      });
-
-      const list = (res.result && res.result.data) || [];
+      const res = await api.getPatternList({ type: 'my' });
+      const list = res.data || [];
       const formatted = list.map(item => {
         const d = new Date(item.createTime || Date.now());
         return {
@@ -62,15 +56,12 @@ Page({
     const id = e.currentTarget.dataset.id;
     wx.showModal({
       title: '确认删除',
-      content: '确定要从云端删除这幅拼豆图纸吗？',
+      content: '确定要从作品集删除这幅拼豆图纸吗？',
       success: async (modalRes) => {
         if (modalRes.confirm) {
           wx.showLoading({ title: '正在删除...' });
           try {
-            await wx.cloud.callFunction({
-              name: 'deletePattern',
-              data: { id }
-            });
+            await api.deletePattern(id);
             wx.hideLoading();
             wx.showToast({ title: '已删除', icon: 'success' });
             this.fetchPatternList();

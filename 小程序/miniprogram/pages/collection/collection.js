@@ -1,6 +1,8 @@
 // # 二级全量图纸作品库管理逻辑
 const { generateGridThumbnail } = require('../../utils/thumbnailHelper.js'); // # 离屏缩略图引擎
 const { PRESET_PATTERNS } = require('../../utils/presetPatterns.js'); // # 官方图纸底座
+const api = require('../../utils/api.js');
+const config = require('../../config.js');
 
 Page({
   data: {
@@ -40,27 +42,10 @@ Page({
       likes: 68
     }] : [];
 
-    if (!wx.cloud) {
-      this.data.allPatterns = fallbackSample.map(item => ({
-        ...item,
-        displayThumb: item.previewUrl || (item.gridData ? generateGridThumbnail(item.gridData, item.paletteBrand) : ''),
-        displaySize: `${item.width}×${item.height}`,
-        createTimeFormatted: '今日'
-      }));
-      this.applyFilterAndSearch();
-      this.setData({ loading: false });
-      if (callback) callback();
-      return;
-    }
-
     this.setData({ loading: true });
     try {
-      const res = await wx.cloud.callFunction({
-        name: 'getPatternList',
-        data: { type: 'my' }
-      });
-
-      const list = (res.result && res.result.data) || [];
+      const res = await api.getPatternList({ type: 'my' });
+      const list = res.data || [];
       let effectiveList = list;
       if (list.length === 0 && fallbackSample.length > 0) {
         effectiveList = fallbackSample;
@@ -71,7 +56,8 @@ Page({
         const w = item.width || (item.gridData && item.gridData[0] ? item.gridData[0].length : 50);
         const h = item.height || (item.gridData ? item.gridData.length : 50);
         const displayName = item.displayName || item.name || `拼豆图纸 #${idx + 1}`;
-        const displayThumb = item.previewUrl || (item.gridData ? generateGridThumbnail(item.gridData, item.paletteBrand) : '');
+        const rawThumb = item.previewUrl ? config.formatImageUrl(item.previewUrl) : '';
+        const displayThumb = rawThumb || (item.gridData ? generateGridThumbnail(item.gridData, item.paletteBrand) : '');
 
         return {
           ...item,
@@ -85,7 +71,7 @@ Page({
       this.data.allPatterns = formatted;
       this.applyFilterAndSearch();
     } catch (err) {
-      console.warn('fetchPatterns cloud error, fallback to sample', err);
+      console.warn('fetchPatterns api error, fallback to sample', err);
       this.data.allPatterns = fallbackSample.map(item => ({
         ...item,
         displayThumb: item.previewUrl || (item.gridData ? generateGridThumbnail(item.gridData, item.paletteBrand) : ''),
@@ -210,10 +196,7 @@ Page({
     wx.showLoading({ title: nextPub ? '正在公开...' : '正在隐藏...' });
 
     try {
-      await wx.cloud.callFunction({
-        name: 'togglePublish',
-        data: { patternId: id, isPublic: nextPub }
-      });
+      await api.togglePublish(id, nextPub);
       wx.hideLoading();
       wx.showToast({ title: nextPub ? '已公开至社区' : '已设为私密', icon: 'success' });
 
@@ -222,7 +205,7 @@ Page({
       this.applyFilterAndSearch();
     } catch (err) {
       wx.hideLoading();
-      wx.showToast({ title: '操作失败', icon: 'error' });
+      wx.showToast({ title: '操作失败', icon: 'none' });
     }
   },
 
@@ -245,10 +228,7 @@ Page({
           wx.showToast({ title: '已删除', icon: 'success' });
 
           try {
-            await wx.cloud.callFunction({
-              name: 'deletePattern',
-              data: { patternId: id, id: id }
-            });
+            await api.deletePattern(id);
           } catch (err) {
             console.error('Delete failed', err);
           }

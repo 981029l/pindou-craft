@@ -2,6 +2,8 @@
 const { generateGridThumbnail } = require('../../utils/thumbnailHelper.js'); // # 离屏缩略图自愈引擎
 const { SERVICE_AGREEMENT, PRIVACY_POLICY } = require('../../utils/policyHelper.js'); // # 用户协议与隐私保护
 const { PRESET_PATTERNS } = require('../../utils/presetPatterns.js'); // # 官方图纸底座
+const api = require('../../utils/api.js');
+const config = require('../../config.js');
 
 Page({
   data: {
@@ -187,25 +189,10 @@ Page({
       likes: 68
     }] : [];
 
-    if (!wx.cloud) {
-      this.setData({
-        patternList: fallbackSample,
-        publicCount: fallbackSample.length,
-        totalLikes: fallbackSample.length ? 68 : 0,
-        loading: false
-      });
-      if (callback) callback();
-      return;
-    }
-
     this.setData({ loading: true });
     try {
-      const res = await wx.cloud.callFunction({
-        name: 'getPatternList',
-        data: { type: 'my' }
-      });
-
-      const list = (res.result && res.result.data) || [];
+      const res = await api.getPatternList({ type: 'my' });
+      const list = res.data || [];
       let publicCount = 0;
       let totalLikes = 0;
 
@@ -222,7 +209,8 @@ Page({
         const w = item.width || (item.gridData && item.gridData[0] ? item.gridData[0].length : 50);
         const h = item.height || (item.gridData ? item.gridData.length : 50);
         const displayName = item.displayName || item.name || `拼豆图纸 #${idx + 1}`;
-        const displayThumb = item.previewUrl || (item.gridData ? generateGridThumbnail(item.gridData, item.paletteBrand) : '');
+        const rawThumb = item.previewUrl ? config.formatImageUrl(item.previewUrl) : '';
+        const displayThumb = rawThumb || (item.gridData ? generateGridThumbnail(item.gridData, item.paletteBrand) : '');
 
         return {
           ...item,
@@ -260,13 +248,7 @@ Page({
     wx.showLoading({ title: nextState ? '正在发布...' : '正在下架...' });
 
     try {
-      await wx.cloud.callFunction({
-        name: 'togglePublish',
-        data: {
-          patternId: id,
-          isPublic: nextState
-        }
-      });
+      await api.togglePublish(id, nextState);
 
       const list = this.data.patternList;
       list[index].isPublic = nextState;
@@ -282,7 +264,7 @@ Page({
       });
     } catch (err) {
       wx.hideLoading();
-      wx.showToast({ title: '操作失败', icon: 'error' });
+      wx.showToast({ title: '操作失败', icon: 'none' });
     }
   },
 
@@ -346,12 +328,9 @@ Page({
 
           wx.showToast({ title: '已删除', icon: 'success' });
 
-          // # 2. 云端物理删除
+          // # 2. 服务端物理删除
           try {
-            await wx.cloud.callFunction({
-              name: 'deletePattern',
-              data: { patternId: id, id: id }
-            });
+            await api.deletePattern(id);
           } catch (err) {
             console.error(err);
             this.fetchMyPatterns();

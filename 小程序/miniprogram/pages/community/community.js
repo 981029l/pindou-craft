@@ -1,6 +1,8 @@
 // # 拼豆社区广场逻辑
 const { generateGridThumbnail } = require('../../utils/thumbnailHelper.js'); // # 离屏缩略图自愈引擎
 const { PRESET_PATTERNS } = require('../../utils/presetPatterns.js'); // # 官方精选图纸底座
+const api = require('../../utils/api.js');
+const config = require('../../config.js');
 
 Page({
   data: {
@@ -149,32 +151,23 @@ Page({
 
   async fetchCommunityList(callback) {
     const presetList = this.getFormattedPresets();
-
-    if (!wx.cloud) {
-      this.setData({ allPatterns: presetList, loading: false });
-      this.sortAndLayoutList();
-      if (callback) callback();
-      return;
-    }
-
     this.setData({ loading: true });
+
     try {
-      const res = await wx.cloud.callFunction({
-        name: 'getPatternList',
-        data: {
-          type: 'community',
-          sortBy: this.data.sortBy
-        }
+      const res = await api.getPatternList({
+        type: 'community',
+        sortBy: this.data.sortBy
       });
 
-      const cloudList = (res.result && res.result.data) || [];
+      const cloudList = res.data || [];
 
       const formattedCloud = cloudList.map((item, idx) => {
         const d = new Date(item.createTime || Date.now());
         const w = item.width || (item.gridData && item.gridData[0] ? item.gridData[0].length : 50);
         const h = item.height || (item.gridData ? item.gridData.length : 50);
         const displayName = item.name || `拼豆灵感 #${idx + 1}`;
-        const displayThumb = item.previewUrl || (item.gridData ? generateGridThumbnail(item.gridData, item.paletteBrand) : '');
+        const rawThumb = item.previewUrl ? config.formatImageUrl(item.previewUrl) : '';
+        const displayThumb = rawThumb || (item.gridData ? generateGridThumbnail(item.gridData, item.paletteBrand) : '');
 
         return {
           ...item,
@@ -186,7 +179,7 @@ Page({
         };
       });
 
-      // # 融合：云端公开图纸在前，官方精选图纸在后（自动按 _id 去重）
+      // # 融合：自建服务端图纸在前，官方精选图纸在后（自动按 _id 去重）
       const seenIds = new Set();
       const merged = [];
 
@@ -210,8 +203,8 @@ Page({
       });
       this.sortAndLayoutList();
     } catch (err) {
-      console.warn('fetchCommunityList cloud err, fallback to presets', err);
-      // # 云端异常时直接使用官方精选图纸底座，杜绝空白
+      console.warn('fetchCommunityList api err, fallback to presets', err);
+      // # 服务端连接异常时直接使用官方精选图纸底座，杜绝空白
       this.setData({
         allPatterns: presetList,
         loading: false
@@ -261,16 +254,9 @@ Page({
     wx.setStorageSync(`pindou_liked_${id}`, true);
     wx.showToast({ title: '灵感点赞 +1', icon: 'success' });
 
-    // # 若非官方本地预置，同步云端点赞原子递增
-    if (!id.startsWith('preset_') && wx.cloud) {
-      try {
-        await wx.cloud.callFunction({
-          name: 'likePattern',
-          data: { patternId: id }
-        });
-      } catch (err) {
-        console.error(err);
-      }
+    // # 若非官方本地预置，同步服务端点赞原子递增
+    if (!id.startsWith('preset_')) {
+      api.likePattern(id).catch(err => console.error('[Community like error]', err));
     }
   },
 
@@ -291,13 +277,8 @@ Page({
       _id: item._id
     };
 
-    if (!item._id.startsWith('preset_') && wx.cloud) {
-      try {
-        wx.cloud.callFunction({
-          name: 'recordDownload',
-          data: { patternId: item._id }
-        });
-      } catch (err) {}
+    if (!item._id.startsWith('preset_')) {
+      api.recordDownload(item._id).catch(() => {});
     }
 
     wx.showToast({ title: '已载入工作台！', icon: 'success' });
