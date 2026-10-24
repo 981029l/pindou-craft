@@ -462,27 +462,6 @@ Page({
     this.checkUserLogin('评论', async (userInfo) => {
       wx.showLoading({ title: '正在发表...' });
 
-      // # 官方预置图纸直接本地闭环追加评论
-      if (this.data.patternId.startsWith('preset_')) {
-        setTimeout(() => {
-          wx.hideLoading();
-          const d = new Date();
-          const newComment = {
-            id: 'c_' + Date.now(),
-            authorName: userInfo.nickname,
-            authorAvatar: userInfo.avatarUrl,
-            content,
-            timeFormatted: `${d.getMonth() + 1}/${d.getDate()}`
-          };
-          this.setData({
-            commentsList: [newComment, ...this.data.commentsList],
-            commentText: ''
-          });
-          wx.showToast({ title: '灵感心得已发表！', icon: 'success' });
-        }, 300);
-        return;
-      }
-
       try {
         const res = await api.addComment(this.data.patternId, {
           content,

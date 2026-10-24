@@ -7,6 +7,7 @@ const fs = require('fs');
 const jwt = require('jsonwebtoken');
 const multer = require('multer');
 const db = require('./db.js');
+const security = require('./security.js');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -134,10 +135,27 @@ app.post('/api/auth/login', async (req, res) => {
   });
 });
 
-// # 2. 图片/效果图上传接口 (替代云存储 uploadFile)
-app.post('/api/upload', upload.single('file'), (req, res) => {
+// # 2. 图片/效果图上传接口 (替代云存储 uploadFile，并接入微信 imgSecCheck 实时拦截)
+app.post('/api/upload', upload.single('file'), async (req, res) => {
   if (!req.file) {
     return res.status(400).json({ success: false, message: '未收到上传的文件' });
+  }
+
+  // 微信图片内容安全检测
+  try {
+    const imgCheck = await security.checkImageSecurity(req.file.path);
+    if (!imgCheck.safe) {
+      if (fs.existsSync(req.file.path)) {
+        fs.unlinkSync(req.file.path);
+      }
+      return res.status(400).json({
+        success: false,
+        code: 87014,
+        message: imgCheck.reason || '图片包含违法违规或不当信息，已被系统拦截'
+      });
+    }
+  } catch (err) {
+    console.warn('[Security] 图片检测异常:', err.message);
   }
 
   const relativeUrl = `/uploads/${req.file.filename}`;
@@ -152,8 +170,8 @@ app.post('/api/upload', upload.single('file'), (req, res) => {
   });
 });
 
-// # 3. 保存拼豆图纸 (替代 savePattern 云函数)
-app.post('/api/patterns', (req, res) => {
+// # 3. 保存拼豆图纸 (替代 savePattern 云函数，并接入微信 msgSecCheck 标题检测)
+app.post('/api/patterns', async (req, res) => {
   const openid = req.user?.openid || req.body.openid || 'guest_user';
   const {
     name = '未命名拼豆手作',
@@ -169,6 +187,22 @@ app.post('/api/patterns', (req, res) => {
 
   if (!gridData || gridData.length === 0) {
     return res.status(400).json({ success: false, message: '图纸网格数据不能为空' });
+  }
+
+  // 微信文本内容安全检测 (Scene 1: 标题/资料)
+  if (name && name.trim()) {
+    try {
+      const textCheck = await security.checkTextSecurity(name, openid, 1);
+      if (!textCheck.safe) {
+        return res.status(400).json({
+          success: false,
+          code: 87014,
+          message: textCheck.reason || '图纸名称包含违法违规或不当信息，请修改后重试'
+        });
+      }
+    } catch (err) {
+      console.warn('[Security] 图纸标题安全检测异常:', err.message);
+    }
   }
 
   const pattern = db.savePattern({
@@ -274,14 +308,28 @@ app.post('/api/patterns/:id/download', (req, res) => {
   });
 });
 
-// # 10. 发表图纸评论 (替代 addComment 云函数)
-app.post('/api/patterns/:id/comment', (req, res) => {
+// # 10. 发表图纸评论 (替代 addComment 云函数，并接入微信 msgSecCheck 评论检测)
+app.post('/api/patterns/:id/comment', async (req, res) => {
   const { id } = req.params;
   const { content, authorName = '拼豆玩家', authorAvatar = '' } = req.body;
   const openid = req.user?.openid || 'guest';
 
   if (!content || !content.trim()) {
     return res.status(400).json({ success: false, message: '评论内容不能为空' });
+  }
+
+  // 微信文本内容安全检测 (Scene 2: 评论)
+  try {
+    const textCheck = await security.checkTextSecurity(content, openid, 2);
+    if (!textCheck.safe) {
+      return res.status(400).json({
+        success: false,
+        code: 87014,
+        message: textCheck.reason || '评论内容包含违法违规或不当信息，已被系统拦截'
+      });
+    }
+  } catch (err) {
+    console.warn('[Security] 评论文本安全检测异常:', err.message);
   }
 
   const comment = db.addComment(id, {
@@ -299,6 +347,16 @@ app.post('/api/patterns/:id/comment', (req, res) => {
     success: true,
     data: comment,
     message: '评论发表成功'
+  });
+});
+
+// # 11. 微信内容安全整改：存量数据一键排查清理接口
+app.post('/api/admin/clean-test-data', (req, res) => {
+  const count = db.cleanAllComments();
+  res.json({
+    success: true,
+    cleanedComments: count,
+    message: '存量历史评论与可能存在的违规测试数据已彻底清空排查'
   });
 });
 

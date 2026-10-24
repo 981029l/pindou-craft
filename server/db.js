@@ -360,20 +360,64 @@ const dbService = {
     };
 
     if (dbMode === 'sqlite') {
-      const r = sqliteDb.prepare('SELECT comments FROM patterns WHERE id = ?').get(patternId);
-      if (!r) return null;
+      let r = sqliteDb.prepare('SELECT comments FROM patterns WHERE id = ?').get(patternId);
+      if (!r) {
+        if (patternId.startsWith('preset_')) {
+          sqliteDb.prepare("INSERT INTO patterns (id, name, comments, is_public, created_at) VALUES (?, '官方精选图纸', '[]', 1, ?)").run(patternId, Date.now());
+          r = { comments: '[]' };
+        } else {
+          return null;
+        }
+      }
       const list = JSON.parse(r.comments || '[]');
       list.push(commentObj);
       sqliteDb.prepare('UPDATE patterns SET comments = ? WHERE id = ?').run(JSON.stringify(list), patternId);
       return commentObj;
     } else {
       const store = loadJsonStore();
-      const p = store.patterns[patternId];
-      if (!p) return null;
+      let p = store.patterns[patternId];
+      if (!p) {
+        if (patternId.startsWith('preset_')) {
+          p = { id: patternId, name: '官方精选图纸', comments: [], isPublic: true, createTime: Date.now() };
+          store.patterns[patternId] = p;
+        } else {
+          return null;
+        }
+      }
       if (!Array.isArray(p.comments)) p.comments = [];
       p.comments.push(commentObj);
       saveJsonStore(store);
       return commentObj;
+    }
+  },
+
+  // # 10. 一键清空所有历史评论 (响应微信官方整改：彻底排查删除存量违规测试记录)
+  cleanAllComments() {
+    if (dbMode === 'sqlite') {
+      const stmt = sqliteDb.prepare("UPDATE patterns SET comments = '[]'");
+      const res = stmt.run();
+      return res.changes;
+    } else {
+      const store = loadJsonStore();
+      let count = 0;
+      for (const id in store.patterns) {
+        if (store.patterns[id].comments && store.patterns[id].comments.length > 0) {
+          count += store.patterns[id].comments.length;
+          store.patterns[id].comments = [];
+        }
+      }
+      saveJsonStore(store);
+      return count;
+    }
+  },
+
+  // # 11. 获取全部图纸用于合规排查
+  getAllPatternsRaw() {
+    if (dbMode === 'sqlite') {
+      return sqliteDb.prepare('SELECT id, name, preview_url, comments FROM patterns').all();
+    } else {
+      const store = loadJsonStore();
+      return Object.values(store.patterns || {});
     }
   }
 };
