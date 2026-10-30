@@ -61,7 +61,7 @@ export function resolveEffectiveBaseUrl(rawBaseUrl) {
 
 /**
  * 核心生图主方法：100% 严格请求 POST /images/generations
- * 符合老板指令：只要是 l0veyou.com，全部统一走此接口！
+ * 严格按照老板最新指定：model = gpt-image-2-5-full, aspect_ratio = 1:1
  */
 export async function generateAiImage({ prompt, customConfig = {} }) {
   const config = { ...getStoredAiConfig(), ...customConfig };
@@ -71,17 +71,19 @@ export async function generateAiImage({ prompt, customConfig = {} }) {
   }
 
   const cleanBase = resolveEffectiveBaseUrl(config.baseUrl);
-  // 严格只调用 /images/generations 接口
   const endpoint = `${cleanBase}/images/generations`;
 
   const requestId = 'pindou_' + Math.random().toString(36).substring(2, 10) + Date.now().toString(36);
-  // 强校验：使用老板指定的 gpt-image-2-5-flare
-  const resolvedModel = (!config.model || config.model === 'gpt-image-2') ? 'gpt-image-2-5-flare' : config.model;
+  // 严格采用老板指定的 gpt-image-2-5-full
+  const resolvedModel = (!config.model || config.model === 'gpt-image-2' || config.model === 'gpt-image-2-5-flare')
+    ? 'gpt-image-2-5-full' 
+    : config.model;
 
   const requestBody = {
     model: resolvedModel,
     prompt: prompt,
     size: '1024x1024',
+    aspect_ratio: '1:1', // 严格携带老板指定的 1:1 比例参数
   };
 
   const response = await fetch(endpoint, {
@@ -102,7 +104,7 @@ export async function generateAiImage({ prompt, customConfig = {} }) {
       if (parsed.error?.message) {
         errorMessage = parsed.error.message;
         if (errorMessage.includes('Image generation is not enabled for this group')) {
-          errorMessage = '中转服务权限提示：当前 API Key 所在的分组未开启生图通道 (Image generation is not enabled for this group)。请在 l0veyou.com 控制台为该 Token 切换到有生图权限的分组。';
+          errorMessage = '中转服务权限提示：当前 API Key 所在的分组未开启生图通道 (Image generation is not enabled for this group)。请在 l0veyou.com 控制台为该 Token 切换到包含生图渠道的分组。';
         }
       }
     } catch (e) {
@@ -133,10 +135,9 @@ export async function generateAiImage({ prompt, customConfig = {} }) {
 
 /**
  * 图像风格重绘与以图变换：
- * 遵照老板指令：彻底废弃 /images/edits，全量统一走 POST /images/generations！
+ * 遵照老板指令：全量统一走 POST /images/generations！
  */
 export async function editAiImage({ prompt, customConfig = {} }) {
-  // 直接走统一的 generateAiImage (POST /images/generations)
   return await generateAiImage({ prompt, customConfig });
 }
 

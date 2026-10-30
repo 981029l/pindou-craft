@@ -224,7 +224,7 @@ export default function OriginalImageCard({
           </span>
           <div>
             <h2 className="text-xs font-bold text-stone-900">AI 图纸生成中心</h2>
-            <p className="text-[10px] text-stone-400 font-mono">l0veyou · POST /images/generations</p>
+            <p className="text-[10px] text-stone-400 font-mono">l0veyou · gpt-image-2-5-full (1:1)</p>
           </div>
         </div>
         <div className="flex items-center gap-1.5">
@@ -305,7 +305,7 @@ export default function OriginalImageCard({
                 <Type className="w-3 h-3 text-rose-500" />
                 <span>画面文字描述 (Prompt)：</span>
               </span>
-              <span className="text-[10px] text-stone-400 font-mono">1024×1024 1K</span>
+              <span className="text-[10px] text-stone-400 font-mono">1024×1024 · 1:1</span>
             </div>
             <textarea
               rows={3}
