@@ -17,43 +17,13 @@ import {
   Wand2, 
   Send, 
   Type, 
-  Trash2, 
-  Layers,
-  ArrowRight
+  Trash2
 } from 'lucide-react';
 import GlassCard from './GlassCard';
 import CustomDropdown from './CustomDropdown';
-import { buildPixelArtPrompt, generateAiImage, editAiImage } from '../core/aiService';
+import { buildPixelArtPrompt, generateAiImage } from '../core/aiService';
 import { PRESET_GALLERY } from '../data/samplePresets';
 import defaultSampleImg from '../assets/default_sample.webp';
-
-// 将任意图片源（本地文件、DataURL、WebP 等）安全规范化转换为标准 PNG File 对象
-async function ensureImageFile(imageSource, filename = 'reference.png') {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.crossOrigin = 'anonymous';
-    img.onload = () => {
-      try {
-        const canvas = document.createElement('canvas');
-        canvas.width = img.naturalWidth || 1024;
-        canvas.height = img.naturalHeight || 1024;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0);
-        canvas.toBlob((blob) => {
-          if (blob) {
-            resolve(new File([blob], filename, { type: 'image/png' }));
-          } else {
-            reject(new Error('图片格式转换失败'));
-          }
-        }, 'image/png');
-      } catch (err) {
-        reject(err);
-      }
-    };
-    img.onerror = () => reject(new Error('无法读取图片源，请重新上传'));
-    img.src = imageSource;
-  });
-}
 
 // 纯文字生图灵感标签
 const TEXT_INSPIRATION_TAGS = [
@@ -64,7 +34,7 @@ const TEXT_INSPIRATION_TAGS = [
   { label: '🌸 向日葵盆栽', prompt: 'blooming sunflower in a ceramic pot, vivid yellow and green, clean flat blocks, cute sticker style' }
 ];
 
-// 图生图重绘灵感修饰词
+// 图纸重绘灵感修饰词
 const EDIT_INSPIRATION_TAGS = [
   { label: '🎨 漫画化', prompt: '漫画化，日系二次元动漫立绘风格，清晰黑描边，纯净大色块，剔除杂色' },
   { label: '👾 8-Bit像素化', prompt: '8-bit retro arcade pixel mosaic, bold high-contrast outlines, simplified perler beads' },
@@ -80,13 +50,13 @@ export default function OriginalImageCard({
   gridSize = 140,
   onSelectPreset,
 }) {
-  // 当前主模式: 'text' (纯文字从零生图) | 'image' (上传图片 / 以图生图)
+  // 当前主模式: 'text' (纯文字从零生图) | 'image' (上传图片 / 风格重绘)
   const [activeTab, setActiveTab] = useState(currentImageSrc ? 'image' : 'text');
 
   // 1. 纯文字生图 Prompt (POST /images/generations)
   const [userTextPrompt, setUserTextPrompt] = useState('a red apple on a wooden table, warm light, photorealistic');
 
-  // 2. 以图生图重绘 Prompt (POST /images/edits)
+  // 2. 图像风格重绘 Prompt (同样走 POST /images/generations)
   const [editPrompt, setEditPrompt] = useState('漫画化，日系二次元风格，清晰描边与色块');
 
   // 风格与生成状态
@@ -122,7 +92,7 @@ export default function OriginalImageCard({
       onImageChanged(e.target.result);
       setAiCandidates([]); // 重置历史候选
       setActiveTab('image'); // 自动切换至以图生图 Tab
-      showStatus('success', '已载入用户本地照片！可直接原图上板，或输入提示词以图生图');
+      showStatus('success', '已载入本地照片！可直接原图上板，或输入提示词生成图纸');
     };
     reader.readAsDataURL(file);
   };
@@ -144,7 +114,7 @@ export default function OriginalImageCard({
     }
   };
 
-  // 模式 1：纯文字生成新图 (POST /images/generations)
+  // 模式 1：纯文字生成新图 (严格 POST /images/generations)
   const handleGenerateFromText = async () => {
     if (!userTextPrompt || !userTextPrompt.trim()) {
       showStatus('error', '请输入你想生成的画面文字描述！');
@@ -158,7 +128,7 @@ export default function OriginalImageCard({
     }
 
     setIsAiGenerating(true);
-    showStatus('info', '正在调用 l0veyou.com (gpt-image-2-5-flare) 纯文字生成图像...');
+    showStatus('info', '正在调用 l0veyou.com (POST /images/generations) 生成图像...');
 
     try {
       const compiledPrompt = buildPixelArtPrompt({
@@ -167,6 +137,7 @@ export default function OriginalImageCard({
         gridWidth: gridSize,
       });
 
+      // 严格只调用 POST /images/generations
       const res = await generateAiImage({ prompt: compiledPrompt });
 
       if (res && res.primaryImage) {
@@ -187,13 +158,8 @@ export default function OriginalImageCard({
     }
   };
 
-  // 模式 2：用户上传图片，以图生图 (POST /images/edits)
+  // 模式 2：风格重绘设计 (严格遵循老板指令：同样统一走 POST /images/generations)
   const handleImageToImage = async () => {
-    if (!currentImageSrc) {
-      showStatus('error', '当前没有参考底图！请先点击下方【上传本地图片】或选择样张');
-      return;
-    }
-
     if (!hasApiKey) {
       showStatus('error', '请先在右上角【设置】中配置 AI 密钥');
       onOpenSettings();
@@ -201,37 +167,32 @@ export default function OriginalImageCard({
     }
 
     setIsAiGenerating(true);
-    showStatus('info', '正在基于当前照片发起【以图生图】重绘请求 (POST /images/edits)...');
+    showStatus('info', '正在调用 l0veyou.com (POST /images/generations) 生成新风格图纸...');
 
     try {
-      // 安全转换当前参考图为合规 PNG File
-      const file = await ensureImageFile(currentImageSrc, 'reference.png');
-
-      // 编译用户重绘意图与拼豆画风
+      // 编译用户重绘意图与拼豆画风，统一请求 /images/generations
       const compiledPrompt = buildPixelArtPrompt({
-        userPrompt: editPrompt.trim() || 'Transform this photo into clean crisp perler bead art',
+        userPrompt: editPrompt.trim() || '漫画化，日系二次元风格，清晰描边与色块',
         style: aiStyle,
         gridWidth: gridSize,
       });
 
-      const res = await editAiImage({ imageFile: file, prompt: compiledPrompt });
+      // 遵照老板指令：绝对不调 edits，统一只调用 POST /images/generations
+      const res = await generateAiImage({ prompt: compiledPrompt });
 
-      if (res && res.candidates && res.candidates.length > 0) {
-        setAiCandidates(res.candidates);
-        setSelectedCandidateIdx(0);
-        onImageChanged(res.candidates[0]);
-
-        if (res.candidates.length > 1) {
-          showStatus('success', `以图生图成功！生成 ${res.candidates.length} 组方案，可在下方点击对比切换！`);
-        } else {
-          showStatus('success', '✨ 以图生图重绘成功！已自动替换底图并刷新拼豆图纸！');
+      if (res && res.primaryImage) {
+        if (res.candidates && res.candidates.length > 0) {
+          setAiCandidates(res.candidates);
+          setSelectedCandidateIdx(0);
         }
+        onImageChanged(res.primaryImage);
+        showStatus('success', '✨ AI 风格重绘成功！已自动转换为拼豆图纸并完成上板！');
       } else {
         throw new Error('AI 接口未返回有效的图像数据');
       }
     } catch (err) {
-      console.error('Image-to-Image Error:', err);
-      showStatus('error', `以图生图失败：${err.message || '网络连接或接口返回错误'}`);
+      console.error('AI Remaster Error:', err);
+      showStatus('error', `AI 生图失败：${err.message || '网络连接或接口返回错误'}`);
     } finally {
       setIsAiGenerating(false);
     }
@@ -263,7 +224,7 @@ export default function OriginalImageCard({
           </span>
           <div>
             <h2 className="text-xs font-bold text-stone-900">AI 图纸生成中心</h2>
-            <p className="text-[10px] text-stone-400 font-mono">l0veyou · gpt-image-2-5-flare</p>
+            <p className="text-[10px] text-stone-400 font-mono">l0veyou · POST /images/generations</p>
           </div>
         </div>
         <div className="flex items-center gap-1.5">
@@ -282,7 +243,7 @@ export default function OriginalImageCard({
         </div>
       </div>
 
-      {/* 顶部双模式 Tabs: [纯文字生图] vs [上传图片 · 以图生图] */}
+      {/* 顶部双模式 Tabs: [纯文字生图] vs [上传图片 · 风格重绘] */}
       <div className="grid grid-cols-2 p-1 bg-stone-100 rounded-xl text-xs font-semibold select-none border border-stone-200/60">
         <button
           type="button"
@@ -307,7 +268,7 @@ export default function OriginalImageCard({
           }`}
         >
           <Upload className="w-3.5 h-3.5 text-rose-600" />
-          <span>图片 · 以图生图</span>
+          <span>图片 · 风格重绘</span>
         </button>
       </div>
 
@@ -409,7 +370,7 @@ export default function OriginalImageCard({
         </div>
       )}
 
-      {/* ===================== 模式 2：用户上传图片 · 以图生图 (图生图) ===================== */}
+      {/* ===================== 模式 2：用户上传图片 · 风格重绘 (统一 POST /images/generations) ===================== */}
       {activeTab === 'image' && (
         <div className="space-y-3 animate-studio-in">
           {/* 参考图预览或上传引导 */}
@@ -516,15 +477,15 @@ export default function OriginalImageCard({
             </div>
           </div>
 
-          {/* 以图生图专属控制区 (POST /images/edits) */}
+          {/* 统一走 POST /images/generations 的风格重绘控制区 */}
           <div className="pt-2 border-t border-stone-100 space-y-2.5">
             <div>
               <div className="flex items-center justify-between text-[11px] font-semibold text-stone-700 mb-1">
                 <span className="flex items-center gap-1">
                   <Sparkles className="w-3 h-3 text-rose-500" />
-                  <span>以图生图重绘意图 (Prompt)：</span>
+                  <span>重绘风格描述词 (Prompt)：</span>
                 </span>
-                <span className="text-[10px] text-rose-600 font-mono">POST /edits</span>
+                <span className="text-[10px] text-rose-600 font-mono">POST /images/generations</span>
               </div>
               <textarea
                 rows={2}
@@ -535,7 +496,7 @@ export default function OriginalImageCard({
               />
             </div>
 
-            {/* 常用以图生图意图标签 */}
+            {/* 常用意图标签 */}
             <div className="flex flex-wrap gap-1">
               {EDIT_INSPIRATION_TAGS.map((tag) => (
                 <button
@@ -561,23 +522,23 @@ export default function OriginalImageCard({
               />
             </div>
 
-            {/* 以图生图主按钮 + 原图直接上板 */}
+            {/* 重绘主按钮 + 原图直接上板 */}
             <div className="space-y-2 pt-1">
               <button
                 type="button"
                 onClick={handleImageToImage}
-                disabled={isAiGenerating || !currentImageSrc}
+                disabled={isAiGenerating}
                 className="w-full py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 active:scale-98 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition-all disabled:opacity-40 cursor-pointer"
               >
                 {isAiGenerating ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    <span>AI 正在以图生图重绘中...</span>
+                    <span>AI 正在生成新风格图纸中...</span>
                   </>
                 ) : (
                   <>
                     <Sparkles className="w-3.5 h-3.5 fill-current" />
-                    <span>🎨 开始以图生图 (基于此图重绘)</span>
+                    <span>🎨 开始 AI 风格重绘上板</span>
                   </>
                 )}
               </button>

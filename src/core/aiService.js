@@ -1,7 +1,7 @@
-// 兼容 OpenAI 开放接口规范的纯 AI 生图与图像编辑重构服务模块 (支持原图保真重构与各画风 Prompt 编译)
+// 统一 AI 图像生成服务模块: 严格遵循 OpenAI 规范，全流程统一走 POST /images/generations 接口
 import { getStoredAiConfig } from '../config/apiConfig';
 
-// 将自然语言参数编译为适合拼豆重绘的高保真 Prompt
+// 将自然语言参数编译为适合拼豆的高保真 Prompt
 export function buildPixelArtPrompt({ userPrompt, style = 'original_remaster', gridWidth = 100, preserveFeatures = [] }) {
   const styleKeywords = {
     original_remaster: 'High-definition realistic perler bead pixel art strictly preserving the original photo style, authentic facial features, realistic contours, natural skin tones, sharp solid color blocks, clean defined edges, no blur, no noise',
@@ -47,8 +47,7 @@ async function resolveImageUrlToLocalBlob(url) {
   return url;
 }
 
-// 智能基准端点解析：本地开发环境下优先通过 Vite 内部反向代理 (/api-l0veyou) 转发，
-// 彻底解决 Cloudflare 针对浏览器 OPTIONS 预检请求返回 403 导致的 CORS 跨域阻断问题
+// 智能基准端点解析：本地开发优先走 Vite 代理，消除 OPTIONS 预检跨域问题
 export function resolveEffectiveBaseUrl(rawBaseUrl) {
   const clean = (rawBaseUrl || 'https://l0veyou.com').replace(/\/+$/, '');
   if (typeof window !== 'undefined') {
@@ -60,6 +59,10 @@ export function resolveEffectiveBaseUrl(rawBaseUrl) {
   return clean;
 }
 
+/**
+ * 核心生图主方法：100% 严格请求 POST /images/generations
+ * 符合老板指令：只要是 l0veyou.com，全部统一走此接口！
+ */
 export async function generateAiImage({ prompt, customConfig = {} }) {
   const config = { ...getStoredAiConfig(), ...customConfig };
 
@@ -68,10 +71,11 @@ export async function generateAiImage({ prompt, customConfig = {} }) {
   }
 
   const cleanBase = resolveEffectiveBaseUrl(config.baseUrl);
-  let endpoint = `${cleanBase}/images/generations`;
+  // 严格只调用 /images/generations 接口
+  const endpoint = `${cleanBase}/images/generations`;
 
   const requestId = 'pindou_' + Math.random().toString(36).substring(2, 10) + Date.now().toString(36);
-  // 强校验：禁止向 l0veyou.com 提交已弃用或不可用的 gpt-image-2 模型，自动升级为 gpt-image-2-5-flare
+  // 强校验：使用老板指定的 gpt-image-2-5-flare
   const resolvedModel = (!config.model || config.model === 'gpt-image-2') ? 'gpt-image-2-5-flare' : config.model;
 
   const requestBody = {
@@ -80,55 +84,15 @@ export async function generateAiImage({ prompt, customConfig = {} }) {
     size: '1024x1024',
   };
 
-  let response;
-  try {
-    response = await fetch(endpoint, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${config.apiKey.trim()}`,
-        'X-Request-Id': requestId,
-      },
-      body: JSON.stringify(requestBody),
-    });
-  } catch (netErr) {
-    // 尝试携带 /v1 重试
-    if (!cleanBase.endsWith('/v1')) {
-      try {
-        endpoint = `${cleanBase}/v1/images/generations`;
-        response = await fetch(endpoint, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${config.apiKey.trim()}`,
-            'X-Request-Id': requestId,
-          },
-          body: JSON.stringify(requestBody),
-        });
-      } catch (retryErr) {
-        throw new Error(`网络请求失败 (CORS或连接异常): ${netErr.message || '请检查代理或服务状态'}`);
-      }
-    } else {
-      throw new Error(`网络请求失败 (CORS或连接异常): ${netErr.message || '请检查代理或服务状态'}`);
-    }
-  }
-
-  // 404 智能 fallback 到 /v1
-  if (response && response.status === 404 && !cleanBase.endsWith('/v1')) {
-    endpoint = `${cleanBase}/v1/images/generations`;
-    try {
-      const retryRes = await fetch(endpoint, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${config.apiKey.trim()}`,
-          'X-Request-Id': requestId,
-        },
-        body: JSON.stringify(requestBody),
-      });
-      if (retryRes) response = retryRes;
-    } catch (_) {}
-  }
+  const response = await fetch(endpoint, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${config.apiKey.trim()}`,
+      'X-Request-Id': requestId,
+    },
+    body: JSON.stringify(requestBody),
+  });
 
   if (!response.ok) {
     const errorText = await response.text();
@@ -138,7 +102,7 @@ export async function generateAiImage({ prompt, customConfig = {} }) {
       if (parsed.error?.message) {
         errorMessage = parsed.error.message;
         if (errorMessage.includes('Image generation is not enabled for this group')) {
-          errorMessage = '中转服务权限提示：当前 API Key 所在的分组未开启生图通道，请在 l0veyou.com 后台为令牌关联支持画图的通道分组。';
+          errorMessage = '中转服务权限提示：当前 API Key 所在的分组未开启生图通道 (Image generation is not enabled for this group)。请在 l0veyou.com 控制台为该 Token 切换到有生图权限的分组。';
         }
       }
     } catch (e) {
@@ -167,105 +131,13 @@ export async function generateAiImage({ prompt, customConfig = {} }) {
   };
 }
 
-export async function editAiImage({ imageFile, prompt, customConfig = {} }) {
-  const config = { ...getStoredAiConfig(), ...customConfig };
-
-  if (!config.apiKey) {
-    throw new Error('请先在右上角【设置】中配置您的 AI API Key');
-  }
-
-  const cleanBase = resolveEffectiveBaseUrl(config.baseUrl);
-  let endpoint = `${cleanBase}/images/edits`;
-
-  const requestId = 'pindou_edit_' + Math.random().toString(36).substring(2, 10) + Date.now().toString(36);
-  // 强校验：模型更正为最新可用的 gpt-image-2-5-flare
-  const resolvedModel = (!config.model || config.model === 'gpt-image-2') ? 'gpt-image-2-5-flare' : config.model;
-
-  const formData = new FormData();
-  formData.append('image', imageFile);
-  formData.append('prompt', prompt);
-  formData.append('model', resolvedModel);
-  formData.append('size', '1024x1024');
-
-  let response;
-  try {
-    response = await fetch(endpoint, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${config.apiKey.trim()}`,
-        'X-Request-Id': requestId,
-      },
-      body: formData,
-    });
-  } catch (netErr) {
-    if (!cleanBase.endsWith('/v1')) {
-      try {
-        endpoint = `${cleanBase}/v1/images/edits`;
-        response = await fetch(endpoint, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${config.apiKey.trim()}`,
-            'X-Request-Id': requestId,
-          },
-          body: formData,
-        });
-      } catch (retryErr) {
-        throw new Error(`以图生图请求失败 (CORS或连接异常): ${netErr.message || '请检查代理或服务状态'}`);
-      }
-    } else {
-      throw new Error(`以图生图请求失败 (CORS或连接异常): ${netErr.message || '请检查代理或服务状态'}`);
-    }
-  }
-
-  if (response && response.status === 404 && !cleanBase.endsWith('/v1')) {
-    endpoint = `${cleanBase}/v1/images/edits`;
-    try {
-      const retryRes = await fetch(endpoint, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${config.apiKey.trim()}`,
-          'X-Request-Id': requestId,
-        },
-        body: formData,
-      });
-      if (retryRes) response = retryRes;
-    } catch (_) {}
-  }
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    let errorMessage = `AI 图像编辑接口报错 (${response.status})`;
-    try {
-      const parsed = JSON.parse(errorText);
-      if (parsed.error?.message) {
-        errorMessage = parsed.error.message;
-        if (errorMessage.includes('Image generation is not enabled for this group')) {
-          errorMessage = '中转服务权限提示：当前 API Key 所在的分组未开启生图通道，请在 l0veyou.com 后台为令牌关联支持画图的通道分组。';
-        }
-      }
-    } catch (e) {
-      if (errorText) errorMessage += `: ${errorText.slice(0, 100)}`;
-    }
-    throw new Error(errorMessage);
-  }
-
-  const result = await response.json();
-  if (!result.data || result.data.length === 0) {
-    throw new Error('AI 未返回有效图像数据');
-  }
-
-  const candidates = await Promise.all(
-    result.data.map(async (item) => {
-      if (item.url) return await resolveImageUrlToLocalBlob(item.url);
-      if (item.b64_json) return `data:image/png;base64,${item.b64_json}`;
-      return item.url || '';
-    })
-  );
-
-  return {
-    candidates,
-    primaryImage: candidates[0],
-  };
+/**
+ * 图像风格重绘与以图变换：
+ * 遵照老板指令：彻底废弃 /images/edits，全量统一走 POST /images/generations！
+ */
+export async function editAiImage({ prompt, customConfig = {} }) {
+  // 直接走统一的 generateAiImage (POST /images/generations)
+  return await generateAiImage({ prompt, customConfig });
 }
 
 export async function testAiConnection(config) {
