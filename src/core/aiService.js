@@ -58,11 +58,13 @@ export async function generateAiImage({ prompt, customConfig = {} }) {
   let endpoint = `${cleanBase}/images/generations`;
 
   const requestId = 'pindou_' + Math.random().toString(36).substring(2, 10) + Date.now().toString(36);
+  // 强校验：禁止向 l0veyou.com 提交已弃用或不可用的 gpt-image-2 模型，自动升级为 gpt-image-2-5-flare
+  const resolvedModel = (!config.model || config.model === 'gpt-image-2') ? 'gpt-image-2-5-flare' : config.model;
 
   const requestBody = {
-    model: config.model || 'gpt-image-2-5-flare',
+    model: resolvedModel,
     prompt: prompt,
-    size: config.imageSize || '1024x1024',
+    size: '1024x1024',
   };
 
   let response;
@@ -162,27 +164,54 @@ export async function editAiImage({ imageFile, prompt, customConfig = {} }) {
   const cleanBase = (config.baseUrl || 'https://l0veyou.com').replace(/\/+$/, '');
   let endpoint = `${cleanBase}/images/edits`;
 
+  const requestId = 'pindou_edit_' + Math.random().toString(36).substring(2, 10) + Date.now().toString(36);
+  // 强校验：模型更正为最新可用的 gpt-image-2-5-flare
+  const resolvedModel = (!config.model || config.model === 'gpt-image-2') ? 'gpt-image-2-5-flare' : config.model;
+
   const formData = new FormData();
   formData.append('image', imageFile);
   formData.append('prompt', prompt);
-  formData.append('model', config.model || 'gpt-image-2-5-flare');
-  formData.append('size', config.imageSize || '1024x1024');
+  formData.append('model', resolvedModel);
+  formData.append('size', '1024x1024');
 
-  let response = await fetch(endpoint, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${config.apiKey.trim()}`,
-    },
-    body: formData,
-  });
+  let response;
+  try {
+    response = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${config.apiKey.trim()}`,
+        'X-Request-Id': requestId,
+      },
+      body: formData,
+    });
+  } catch (netErr) {
+    if (!cleanBase.endsWith('/v1')) {
+      try {
+        endpoint = `${cleanBase}/v1/images/edits`;
+        response = await fetch(endpoint, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${config.apiKey.trim()}`,
+            'X-Request-Id': requestId,
+          },
+          body: formData,
+        });
+      } catch (retryErr) {
+        throw new Error(`网络连接失败: ${netErr.message || '请检查网络或代理连接'}`);
+      }
+    } else {
+      throw new Error(`网络连接失败: ${netErr.message || '请检查网络或代理连接'}`);
+    }
+  }
 
-  if (response.status === 404 && !cleanBase.endsWith('/v1')) {
+  if (response && response.status === 404 && !cleanBase.endsWith('/v1')) {
     endpoint = `${cleanBase}/v1/images/edits`;
     try {
       const retryRes = await fetch(endpoint, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${config.apiKey.trim()}`,
+          'X-Request-Id': requestId,
         },
         body: formData,
       });

@@ -1,5 +1,5 @@
 // 全局统一配置中心: 管理 AI 接口、模型预设与本地持久化存储 # 全局统一配置中心
-const STORAGE_KEY_CONFIG = 'pindou_ai_config_v1'; // # 本地存储键名
+const STORAGE_KEY_CONFIG = 'pindou_ai_config_v2'; // # 升级配置键名避免读取旧版残留模型
 
 export const DEFAULT_AI_CONFIG = {
   baseUrl: 'https://l0veyou.com', // # 默认图像 API 接口地址
@@ -13,12 +13,16 @@ export const DEFAULT_AI_CONFIG = {
 
 export function getStoredAiConfig() { // # 获取本地持久化 AI 配置
   try {
-    const raw = localStorage.getItem(STORAGE_KEY_CONFIG); // # 读取本地存储
+    const raw = localStorage.getItem(STORAGE_KEY_CONFIG) || localStorage.getItem('pindou_ai_config_v1'); // # 读取本地存储
     if (!raw) return { ...DEFAULT_AI_CONFIG }; // # 未存储时返回默认配置
     const parsed = JSON.parse(raw); // # 解析存储的 JSON 数据
     const merged = { ...DEFAULT_AI_CONFIG, ...parsed }; // # 合并配置
-    // 若本地已有空值凭据，自动补齐为默认有效凭据
-    if (!merged.apiKey || !merged.baseUrl) {
+
+    // 强校验纠偏: 若历史缓存包含不可用的旧模型 gpt-image-2 或旧端点，自动更正为最新可用的 gpt-image-2-5-flare
+    if (!merged.model || merged.model === 'gpt-image-2') {
+      merged.model = DEFAULT_AI_CONFIG.model;
+    }
+    if (!merged.apiKey || !merged.baseUrl || merged.baseUrl.includes('image.mlgb7.com')) {
       merged.apiKey = DEFAULT_AI_CONFIG.apiKey;
       merged.baseUrl = DEFAULT_AI_CONFIG.baseUrl;
       merged.model = DEFAULT_AI_CONFIG.model;
@@ -45,4 +49,3 @@ export const PRESET_ENDPOINTS = [ // # 预设端点列表
   { name: '专属图像服务 (gpt-image-2)', url: 'https://image.mlgb7.com/v1', model: 'gpt-image-2', format: 'url' },
   { name: 'OpenAI 官方 (dall-e-3)', url: 'https://api.openai.com/v1', model: 'dall-e-3', format: 'url' },
 ];
-

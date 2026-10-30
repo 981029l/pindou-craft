@@ -101,7 +101,14 @@ export default function App() {
   const handleImageChanged = (newSrc) => { // # 图像变更回调
     setCurrentImageSrc(newSrc);
     setActiveMobileTab('canvas'); // # 移动端自动切换至画布预览
-    recomputeGrid(newSrc, gridWidth, gridHeight, brightness, contrast, saturation, enableColorLimit, maxColors, paletteBrand, true);
+    if (newSrc) {
+      recomputeGrid(newSrc, gridWidth, gridHeight, brightness, contrast, saturation, enableColorLimit, maxColors, paletteBrand, true);
+    } else {
+      const emptyGrid = Array.from({ length: gridHeight }, () => Array(gridWidth).fill('EMPTY'));
+      setGridData(emptyGrid);
+      setHistory([emptyGrid]);
+      setHistoryIndex(0);
+    }
   };
 
   const handleSelectPreset = (preset) => { // # 快捷预设载入
