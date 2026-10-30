@@ -21,10 +21,15 @@ import {
   Pin,
   Check,
   CheckCircle2,
-  ArrowLeftRight
+  ArrowLeftRight,
+  Printer,
+  Download,
+  Cloud,
+  SplitSquareVertical,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react'; // # 图标资源引用
 import { getPaletteDataByBrand } from '../data/paletteManager'; // # 色卡数据管理器
-import SplitFlapDisplay from './ui/SplitFlapDisplay';
 
 export default function CanvasEditor({ // # 画布编辑器与竞品级用料矩阵工作台
   gridData,
@@ -37,19 +42,40 @@ export default function CanvasEditor({ // # 画布编辑器与竞品级用料矩
   paletteBrand = 'MARD',
   showGridLines = true,
   showColorCodes = true,
+  onToggleColorCodes,
   showRulers = false, // # 默认不选中刻度标尺
+  onToggleRulers,
   compareMode = false,
+  onToggleCompareMode,
   undo,
   redo,
   canUndo,
   canRedo,
+  patternName,
+  onPatternNameChange,
+  onPrint,
+  onDownloadPng,
+  onExportBom,
+  onReset,
+  currentTool: propTool,
+  onToolChange,
+  beadStyle: propBeadStyle,
+  onBeadStyleChange,
+  onToggleGridLines,
 }) {
+  const [internalTool, setInternalTool] = useState('pencil');
+  const currentTool = propTool !== undefined ? propTool : internalTool;
+  const setCurrentTool = onToolChange || setInternalTool;
+
+  const [internalBeadStyle, setInternalBeadStyle] = useState('gloss');
+  const beadStyle = propBeadStyle !== undefined ? propBeadStyle : internalBeadStyle;
+  const setBeadStyle = onBeadStyleChange || setInternalBeadStyle;
+  const [isBomDrawerOpen, setIsBomDrawerOpen] = useState(false); // # 底部物料清单抽屉折叠状态
   const containerRef = useRef(null); // # 容器引用
   const canvasRef = useRef(null); // # 画布引用
   const origImgRef = useRef(null); // # 原图图像引用
   const pinchStartRef = useRef(null); // # 双指缩放触摸起始状态
 
-  const [currentTool, setCurrentTool] = useState('pencil'); // # 当前激活工具: 'pencil'|'bucket'|'picker'|'eraser'|'hand'
   const [isDrawing, setIsDrawing] = useState(false); // # 是否正在绘图
   const [zoom, setZoom] = useState(1); // # 缩放倍率
   const [pan, setPan] = useState({ x: 0, y: 0 }); // # 画布平移偏移量
@@ -59,7 +85,6 @@ export default function CanvasEditor({ // # 画布编辑器与竞品级用料矩
   const [isSpacePressed, setIsSpacePressed] = useState(false); // # 空格键按住状态
 
   // 默认采用【实心高光微珠 (gloss)】质感，彻底消除数万个小黑孔引发的灰雾干扰
-  const [beadStyle, setBeadStyle] = useState('gloss'); // 'gloss' | 'pixel' | 'bead'
 
   const [curtainPos, setCurtainPos] = useState(50);
   const [isDraggingCurtain, setIsDraggingCurtain] = useState(false);
@@ -779,159 +804,6 @@ export default function CanvasEditor({ // # 画布编辑器与竞品级用料矩
 
   return (
     <div className="flex flex-col h-full overflow-hidden bg-white rounded-2xl border border-stone-200 shadow-sm select-none">
-      {/* 辅助工具栏 (响应式紧凑平铺，绝无横向滚动条) */}
-      <div className="flex flex-wrap sm:flex-nowrap items-center justify-between gap-1.5 p-1.5 sm:p-2 border-b border-stone-200 bg-stone-50/90 text-xs shrink-0">
-        {/* 左侧：绘图主工具 + 撤销重做紧凑胶囊 */}
-        <div className="flex items-center gap-1 shrink-0">
-          <div className="flex items-center gap-0.5 bg-white p-0.5 sm:p-1 rounded-xl border border-stone-200 shadow-xs">
-            <button
-              onClick={() => setCurrentTool('pencil')}
-              className={`p-1.5 rounded-lg transition-colors ${
-                currentTool === 'pencil' ? 'bg-stone-900 text-white' : 'text-stone-600 hover:text-stone-900 hover:bg-stone-100'
-              }`}
-              title="画笔 (单格着色)"
-            >
-              <Pencil className="w-3.5 h-3.5" />
-            </button>
-
-            <button
-              onClick={() => setCurrentTool('bucket')}
-              className={`p-1.5 rounded-lg transition-colors ${
-                currentTool === 'bucket' ? 'bg-stone-900 text-white' : 'text-stone-600 hover:text-stone-900 hover:bg-stone-100'
-              }`}
-              title="油漆桶 (泛洪填充)"
-            >
-              <PaintBucket className="w-3.5 h-3.5" />
-            </button>
-
-            <button
-              onClick={() => setCurrentTool('picker')}
-              className={`p-1.5 rounded-lg transition-colors ${
-                currentTool === 'picker' ? 'bg-stone-900 text-white' : 'text-stone-600 hover:text-stone-900 hover:bg-stone-100'
-              }`}
-              title="吸管 (吸取色号)"
-            >
-              <Pipette className="w-3.5 h-3.5" />
-            </button>
-
-            <button
-              onClick={() => setCurrentTool('eraser')}
-              className={`p-1.5 rounded-lg transition-colors ${
-                currentTool === 'eraser' ? 'bg-stone-900 text-white' : 'text-stone-600 hover:text-stone-900 hover:bg-stone-100'
-              }`}
-              title="橡皮擦 (清除透明)"
-            >
-              <Eraser className="w-3.5 h-3.5" />
-            </button>
-
-            <button
-              onClick={() => setCurrentTool('hand')}
-              className={`p-1.5 rounded-lg transition-colors ${
-                currentTool === 'hand' ? 'bg-stone-900 text-white' : 'text-stone-600 hover:text-stone-900 hover:bg-stone-100'
-              }`}
-              title="抓手 (平移画布)"
-            >
-              <Hand className="w-3.5 h-3.5" />
-            </button>
-          </div>
-
-          {/* 撤销 / 重做 */}
-          <div className="flex items-center gap-0.5 bg-white p-0.5 sm:p-1 rounded-xl border border-stone-200 shadow-xs">
-            <button
-              onClick={undo}
-              disabled={!canUndo}
-              className="p-1.5 rounded-lg text-stone-600 hover:text-stone-900 hover:bg-stone-100 disabled:opacity-30 transition-colors"
-              title="撤销 (Ctrl+Z)"
-            >
-              <Undo2 className="w-3.5 h-3.5" />
-            </button>
-            <button
-              onClick={redo}
-              disabled={!canRedo}
-              className="p-1.5 rounded-lg text-stone-600 hover:text-stone-900 hover:bg-stone-100 disabled:opacity-30 transition-colors"
-              title="重做 (Ctrl+Y)"
-            >
-              <Redo2 className="w-3.5 h-3.5" />
-            </button>
-          </div>
-        </div>
-
-        {/* 右侧：3 种质感模式 + 视口缩放控制 */}
-        <div className="flex items-center gap-1 shrink-0">
-          {/* 质感切换 (移动端紧凑图标展示) */}
-          <div className="flex items-center gap-0.5 bg-white p-0.5 sm:p-1 rounded-xl border border-stone-200 shadow-xs">
-            <button
-              onClick={() => setBeadStyle('gloss')}
-              className={`px-1.5 sm:px-2 py-1 rounded-lg text-[11px] font-medium transition-colors flex items-center gap-1 ${
-                beadStyle === 'gloss' ? 'bg-amber-500 text-white font-bold' : 'text-stone-600 hover:bg-stone-100'
-              }`}
-              title="实心高光微珠质感"
-            >
-              <Sparkles className="w-3 h-3" />
-              <span className="hidden sm:inline">微珠</span>
-            </button>
-
-            <button
-              onClick={() => setBeadStyle('pixel')}
-              className={`px-1.5 sm:px-2 py-1 rounded-lg text-[11px] font-medium transition-colors flex items-center gap-1 ${
-                beadStyle === 'pixel' ? 'bg-stone-900 text-white font-bold' : 'text-stone-600 hover:bg-stone-100'
-              }`}
-              title="平面像素方块"
-            >
-              <Square className="w-3 h-3" />
-              <span className="hidden sm:inline">像素</span>
-            </button>
-
-            <button
-              onClick={() => setBeadStyle('bead')}
-              className={`px-1.5 sm:px-2 py-1 rounded-lg text-[11px] font-medium transition-colors flex items-center gap-1 ${
-                beadStyle === 'bead' ? 'bg-stone-900 text-white font-bold' : 'text-stone-600 hover:bg-stone-100'
-              }`}
-              title="经典打孔拼豆"
-            >
-              <Circle className="w-3 h-3" />
-              <span className="hidden sm:inline">打孔</span>
-            </button>
-          </div>
-
-          {/* 缩放控制器 */}
-          <div className="flex items-center gap-0.5 bg-white px-1 py-0.5 sm:py-1 rounded-xl border border-stone-200 shadow-xs">
-            <button
-              onClick={() => {
-                isUserZoomedRef.current = true;
-                setZoom(prev => Math.max(0.02, Number((prev - 0.2).toFixed(3))));
-              }}
-              className="p-1 text-stone-500 hover:text-stone-900"
-              title="缩小"
-            >
-              <ZoomOut className="w-3.5 h-3.5" />
-            </button>
-            <span className="text-[10px] sm:text-[11px] font-mono text-stone-600 min-w-[30px] sm:min-w-[36px] text-center font-bold">
-              {Math.round(zoom * 100)}%
-            </span>
-            <button
-              onClick={() => {
-                isUserZoomedRef.current = true;
-                setZoom(prev => Math.min(8.0, Number((prev + 0.2).toFixed(3))));
-              }}
-              className="p-1 text-stone-500 hover:text-stone-900"
-              title="放大 (支持指哪放哪)"
-            >
-              <ZoomIn className="w-3.5 h-3.5" />
-            </button>
-
-            <button
-              onClick={fitToViewport}
-              className="flex items-center gap-0.5 sm:gap-1 px-1.5 sm:px-2 py-1 rounded-lg bg-stone-900 hover:bg-stone-800 text-white text-[10px] sm:text-[11px] font-bold shadow-xs transition-colors shrink-0"
-              title="全图自适应铺满"
-            >
-              <Shrink className="w-3 h-3 text-stone-300" />
-              <span>铺满</span>
-            </button>
-          </div>
-        </div>
-      </div>
-
       {/* 核心工作台视口 (支持光标无级局部缩放、双击对焦与全向平移) */}
       <div
         ref={containerRef}
@@ -947,7 +819,7 @@ export default function CanvasEditor({ // # 画布编辑器与竞品级用料矩
         onTouchCancel={handleTouchEnd}
         onWheel={handleWheel}
         style={{ touchAction: 'none' }}
-        className={`relative flex-1 w-full overflow-hidden bg-[#f1f3f2] flex items-center justify-center p-2 sm:p-5 select-none custom-scrollbar ${
+        className={`relative flex-1 w-full overflow-hidden pegboard-surface flex items-center justify-center p-2 sm:p-5 select-none custom-scrollbar ${
           isPanning ? 'cursor-grabbing' : isSpacePressed || currentTool === 'hand' ? 'cursor-grab' : 'cursor-crosshair'
         }`}
       >
@@ -968,89 +840,111 @@ export default function CanvasEditor({ // # 画布编辑器与竞品级用料矩
           </div>
         )}
 
-        {/* 画布右下角悬浮快捷放大控制器与高倍微距档位 */}
-        <div className="absolute bottom-3 right-3 z-30 flex items-center gap-1 bg-white/90 backdrop-blur-md px-2 py-1 rounded-xl shadow-lg border border-stone-200/90 text-xs">
-          {/* 滚轮缩放专属开关按钮 */}
+        {/* 画布右下角仅保留轻量滚轮缩放提示开关 */}
+        <button
+          type="button"
+          onClick={() => setEnableWheelZoom(prev => !prev)}
+          className={`absolute bottom-3 right-3 z-30 px-2.5 py-1 rounded-xl text-[11px] font-medium transition-colors shadow-sm border border-stone-200/90 backdrop-blur-md ${
+            enableWheelZoom
+              ? 'bg-amber-500 text-white font-bold shadow-xs'
+              : 'bg-white/85 text-stone-600 hover:bg-white hover:text-stone-900'
+          }`}
+          title={enableWheelZoom ? '滚轮缩放已开启 (滚轮直接缩放画布)' : '滚轮缩放已关闭 (按住 Ctrl+滚轮也可即时缩放)'}
+        >
+          <span>滚轮缩放: {enableWheelZoom ? '开' : '关'}</span>
+        </button>
+
+        {/* Google Stitch: Floating Tactical Canvas HUD Toolbar at bottom */}
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-30 flex items-center bg-white/95 backdrop-blur-md px-3.5 py-1.5 rounded-xl shadow-lg border border-stone-200/90 gap-2.5 sm:gap-3 text-xs select-none">
+          {/* 网格标线开关 */}
+          <label className="flex items-center gap-1.5 cursor-pointer text-stone-700 font-medium hover:text-stone-900 transition-colors">
+            <input
+              type="checkbox"
+              checked={showGridLines}
+              onChange={() => onToggleGridLines && onToggleGridLines()}
+              className="rounded border-stone-300 text-rose-600 focus:ring-rose-500 w-3.5 h-3.5 cursor-pointer"
+            />
+            <span className="text-[11px] font-semibold">网格线</span>
+          </label>
+
+          <div className="w-px h-3.5 bg-stone-200" />
+
+          {/* 覆叠色号标字 */}
+          <label className="flex items-center gap-1.5 cursor-pointer text-stone-700 font-medium hover:text-stone-900 transition-colors">
+            <input
+              type="checkbox"
+              checked={showColorCodes}
+              onChange={() => onToggleColorCodes && onToggleColorCodes()}
+              className="rounded border-stone-300 text-rose-600 focus:ring-rose-500 w-3.5 h-3.5 cursor-pointer"
+            />
+            <span className="text-[11px] font-semibold">色号标字</span>
+          </label>
+
+          <div className="w-px h-3.5 bg-stone-200" />
+
+          {/* 颗粒规格药丸 */}
+          <div className="hidden sm:flex items-center gap-1 bg-stone-100 px-2 py-0.5 rounded-lg font-mono text-[10px]">
+            <span className="w-2 h-2 rounded-full bg-rose-600 inline-block" />
+            <span className="font-bold text-stone-800">2.6mm 迷你豆</span>
+            <span className="text-stone-400">/ 1:1实物</span>
+          </div>
+
+          <div className="w-px h-3.5 bg-stone-200 hidden sm:block" />
+
+          {/* 缩放控制器 */}
+          <div className="flex items-center gap-1">
+            <button
+              type="button"
+              onClick={() => {
+                isUserZoomedRef.current = true;
+                setZoom(prev => Math.max(0.02, Number((prev - 0.2).toFixed(3))));
+              }}
+              className="p-1 rounded hover:bg-stone-100 text-stone-500 hover:text-stone-900 transition-colors"
+              title="缩小"
+            >
+              <ZoomOut className="w-3.5 h-3.5" />
+            </button>
+            <span className="font-mono font-bold text-stone-700 px-1 min-w-[36px] text-center text-[11px]">
+              {Math.round(zoom * 100)}%
+            </span>
+            <button
+              type="button"
+              onClick={() => {
+                isUserZoomedRef.current = true;
+                setZoom(prev => Math.min(8.0, Number((prev + 0.2).toFixed(3))));
+              }}
+              className="p-1 rounded hover:bg-stone-100 text-stone-500 hover:text-stone-900 transition-colors"
+              title="放大"
+            >
+              <ZoomIn className="w-3.5 h-3.5" />
+            </button>
+            <button
+              type="button"
+              onClick={fitToViewport}
+              className="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-stone-900 hover:bg-stone-800 text-white shadow-2xs transition-colors"
+              title="铺满自适应视口"
+            >
+              适应
+            </button>
+          </div>
+
+          <div className="w-px h-3.5 bg-stone-200" />
+
+          {/* 当前激活画笔色卡弹窗快捷入口 */}
           <button
             type="button"
-            onClick={() => setEnableWheelZoom(prev => !prev)}
-            className={`px-2 py-1 rounded-lg text-[11px] font-medium transition-colors flex items-center gap-1 ${
-              enableWheelZoom
-                ? 'bg-amber-500 text-white font-bold shadow-xs'
-                : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
-            }`}
-            title={enableWheelZoom ? '滚轮缩放已开启 (鼠标滚轮直接缩放画布，点击关闭恢复正常滚动网页)' : '滚轮缩放已关闭 (按住 Ctrl+滚轮也可即时缩放，点击开启直接滚轮缩放)'}
+            onClick={() => setShowQuickPalette(true)}
+            className="flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-stone-100 hover:bg-stone-200 text-stone-800 text-xs font-mono font-bold transition-colors shadow-2xs border border-stone-200/60"
+            title="挑选画笔颜色"
           >
-            <span>滚轮缩放: {enableWheelZoom ? '开' : '关'}</span>
-          </button>
-
-          <span className="w-px h-3.5 bg-stone-200 mx-0.5" />
-
-          <button
-            type="button"
-            onClick={() => {
-              isUserZoomedRef.current = true;
-              setZoom(prev => Math.max(0.02, Number((prev - 0.3).toFixed(3))));
-            }}
-            className="p-1 rounded-lg hover:bg-stone-100 text-stone-700 transition-colors"
-            title="缩小"
-          >
-            <ZoomOut className="w-3.5 h-3.5" />
-          </button>
-
-          <button
-            type="button"
-            onClick={() => {
-              isUserZoomedRef.current = true;
-              setZoom(prev => Math.min(8.0, Number((prev + 0.3).toFixed(3))));
-            }}
-            className="p-1 rounded-lg hover:bg-stone-100 text-stone-700 transition-colors"
-            title="放大"
-          >
-            <ZoomIn className="w-3.5 h-3.5" />
-          </button>
-
-          <span className="w-px h-3.5 bg-stone-200 mx-0.5" />
-
-          {/* 快捷放大档位 */}
-          <button
-            type="button"
-            onClick={() => {
-              isUserZoomedRef.current = true;
-              setZoom(2.0);
-            }}
-            className={`px-1.5 py-0.5 rounded text-[10px] font-bold font-mono transition-colors ${
-              Math.abs(zoom - 2.0) < 0.1 ? 'bg-amber-500 text-white' : 'text-stone-600 hover:bg-stone-100'
-            }`}
-            title="放大至 200%"
-          >
-            2x
-          </button>
-
-          <button
-            type="button"
-            onClick={() => {
-              isUserZoomedRef.current = true;
-              setZoom(4.0);
-            }}
-            className={`px-1.5 py-0.5 rounded text-[10px] font-bold font-mono transition-colors ${
-              Math.abs(zoom - 4.0) < 0.1 ? 'bg-amber-500 text-white' : 'text-stone-600 hover:bg-stone-100'
-            }`}
-            title="微距放大 400%"
-          >
-            4x
-          </button>
-
-          <button
-            type="button"
-            onClick={fitToViewport}
-            className="flex items-center gap-0.5 px-1.5 py-0.5 rounded-lg bg-stone-900 text-white text-[10px] font-bold shadow-xs hover:bg-stone-800 transition-colors ml-0.5"
-            title="双击画布或点击此处还原全图"
-          >
-            <Shrink className="w-3 h-3 text-stone-300" />
-            <span>铺满</span>
+            <span
+              className="w-3 h-3 rounded-xs border border-black/20"
+              style={{ backgroundColor: activeColorInfo?.hex || '#000000' }}
+            />
+            <span>{selectedColorCode}</span>
           </button>
         </div>
+
 
         <div
           style={{
@@ -1086,83 +980,48 @@ export default function CanvasEditor({ // # 画布编辑器与竞品级用料矩
         </div>
       </div>
 
-      {/* 底部拼小豆竞品同款: 详细用料胶囊卡片矩阵 */}
-      <div className="bg-white border-t border-stone-200 p-2.5 sm:p-3 shrink-0 select-none">
-        {/* Supahero 风格 Bento Grid 微仪表板与 Componentry 机械翻牌屏 */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 mb-2.5">
-          {/* Bento 卡片 1: 总豆数 (带 SplitFlap 翻牌器) */}
-          <div className="flex items-center justify-between p-2 rounded-xl bg-stone-950 border border-stone-800 text-white shadow-xs">
-            <div className="min-w-0 pr-1.5">
-              <div className="flex items-center gap-1.5 text-[10px] sm:text-[11px] text-stone-400 font-medium">
-                <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse shrink-0" />
-                <span className="truncate">总耗材豆量</span>
-              </div>
-              <div className="text-[10px] text-stone-500 font-mono mt-0.5 truncate">
-                {paletteBrand} · {width}×{height}格
-              </div>
-            </div>
-            <SplitFlapDisplay
-              value={colorStats.total}
-              minLength={4}
-              accentColor="#f59e0b"
-            />
-          </div>
+      {/* 底部轻量工坊状态与物料清单抽屉 */}
+      <div className="bg-white border-t border-stone-200 shrink-0 select-none">
+        {/* 状态与触发栏 (常驻单行，仅 38px 高) */}
+        <div className="flex items-center justify-between px-3 py-1.5 text-xs text-stone-600 gap-2">
+          {/* 左侧微状态胶囊 (Linear 风格轻量明亮设计) */}
+          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-stone-100 text-stone-900 font-bold border border-stone-200/80 shadow-2xs shrink-0">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+              <span>总豆量 {colorStats.total.toLocaleString()} 粒</span>
+            </span>
 
-          {/* Bento 卡片 2: 颜色总数 (带 SplitFlap 翻牌器) */}
-          <div className="flex items-center justify-between p-2 rounded-xl bg-stone-950 border border-stone-800 text-white shadow-xs">
-            <div className="min-w-0 pr-1.5">
-              <div className="flex items-center gap-1.5 text-[10px] sm:text-[11px] text-stone-400 font-medium">
-                <span className="w-1.5 h-1.5 rounded-full bg-sky-400 animate-pulse shrink-0" />
-                <span className="truncate">用料色种数</span>
-              </div>
-              <div className="text-[10px] text-stone-500 font-mono mt-0.5 truncate">
-                国际标准色谱
-              </div>
-            </div>
-            <SplitFlapDisplay
-              value={colorStats.list.length}
-              minLength={2}
-              accentColor="#38bdf8"
-            />
-          </div>
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-stone-100 text-stone-700 font-medium border border-stone-200/80 shadow-2xs shrink-0">
+              <span className="w-1.5 h-1.5 rounded-full bg-sky-500" />
+              <span>用料 {colorStats.list.length} 色</span>
+            </span>
 
-          {/* Bento 卡片 3: 拼装打卡完成度 (带 SplitFlap 翻牌器) */}
-          <div className="flex items-center justify-between p-2 rounded-xl bg-stone-950 border border-stone-800 text-white shadow-xs">
-            <div className="min-w-0 pr-1.5">
-              <div className="flex items-center gap-1.5 text-[10px] sm:text-[11px] text-stone-400 font-medium">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping shrink-0" />
-                <span className="truncate">已完成色号</span>
-              </div>
-              <div className="text-[10px] text-emerald-400 font-mono mt-0.5 truncate font-bold">
-                {colorStats.list.length > 0 ? `${Math.round((completedColors.size / colorStats.list.length) * 100)}% 完成` : '就绪'}
-              </div>
-            </div>
-            <SplitFlapDisplay
-              value={completedColors.size}
-              minLength={2}
-              accentColor="#10b981"
-            />
-          </div>
+            <span className="hidden md:inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-stone-50 text-stone-500 font-mono text-[11px] border border-stone-200/60 shrink-0">
+              {paletteBrand} · {width}×{height} 格
+            </span>
 
-          {/* Bento 卡片 4: 激活画笔与快捷换色 */}
-          <div className="relative flex flex-col justify-between p-2 rounded-xl bg-stone-100/90 border border-stone-200/90 shadow-2xs">
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] sm:text-[11px] font-bold text-stone-700 flex items-center gap-1">
-                <Palette className="w-3 h-3 text-stone-500" />
-                <span>激活画笔</span>
+            {completedColors.size > 0 && (
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700 font-bold border border-emerald-200 shadow-2xs shrink-0">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                <span>已拼完 {completedColors.size}/{colorStats.list.length} 色</span>
               </span>
-              {highlightColorCode ? (
-                <button
-                  type="button"
-                  onClick={() => onToggleHighlightColorCode && onToggleHighlightColorCode(null)}
-                  className="text-[10px] font-bold text-amber-700 hover:text-amber-800 underline"
-                >
-                  取消高亮
-                </button>
-              ) : (
-                <span className="text-[10px] text-stone-400">点击色卡高亮</span>
-              )}
-            </div>
+            )}
+          </div>
+
+          {/* 右侧：画笔快捷选色 + 展开/折叠抽屉按钮 */}
+          <div className="flex items-center gap-2 shrink-0">
+            {highlightColorCode && (
+              <button
+                type="button"
+                onClick={() => onToggleHighlightColorCode && onToggleHighlightColorCode(null)}
+                className="hidden sm:inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100 text-[11px] font-bold transition-colors"
+              >
+                <span>取消高亮 [{highlightColorCode}]</span>
+              </button>
+            )}
+
+            {/* 快捷选色浮窗触发按键 */}
+            <div className="relative">
               <button
                 type="button"
                 onClick={() => setShowQuickPalette(prev => !prev)}
@@ -1322,90 +1181,92 @@ export default function CanvasEditor({ // # 画布编辑器与竞品级用料矩
                 </>
               )}
             </div>
-          </div>
 
-        {/* 用料清单与实体打卡胶囊标头 */}
-        <div className="flex items-center justify-between gap-2 mb-2 pb-1 border-b border-stone-100 text-xs">
-          <div className="flex items-center gap-1.5 text-stone-800 font-bold">
-            <span className="font-display">物料清单 (BOM)</span>
-            <span className="text-stone-300">·</span>
-            <span className="text-[11px] font-normal text-stone-500">点击色卡一键高亮定位，右侧勾选即时同步物理打卡</span>
-          </div>
-          {highlightColorCode ? (
+            {/* 折叠/展开 BOM 胶囊清单抽屉按钮 */}
             <button
               type="button"
-              onClick={() => onToggleHighlightColorCode && onToggleHighlightColorCode(null)}
-              className="flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-500 hover:bg-amber-600 text-white text-[11px] font-bold shadow-xs transition-colors"
+              onClick={() => setIsBomDrawerOpen(prev => !prev)}
+              className={`flex items-center gap-1.5 px-3 py-1 rounded-lg font-medium text-xs transition-colors shadow-2xs border ${
+                isBomDrawerOpen
+                  ? 'bg-stone-900 text-white border-stone-900 font-bold'
+                  : 'bg-stone-100 text-stone-700 border-stone-200 hover:bg-stone-200'
+              }`}
+              title={isBomDrawerOpen ? '收起物料清单' : '展开全部物料清单'}
             >
-              已高亮 [{highlightColorCode}] 点击还原
+              <span>物料清单 ({colorStats.list.length}色)</span>
+              {isBomDrawerOpen ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronUp className="w-3.5 h-3.5" />}
             </button>
-          ) : (
-            <span className="text-[11px] text-stone-400 hidden sm:inline">
-              共计 {colorStats.list.length} 色 · 点击胶囊右侧圆圈标记已拼完
-            </span>
-          )}
+          </div>
         </div>
 
-        {/* 双拼用料胶囊列表 (支持拼装进度打勾) */}
-        <div className="flex flex-wrap gap-1.5 max-h-[110px] sm:max-h-[145px] overflow-y-auto custom-scrollbar pr-1">
-          {colorStats.list.map((item) => {
-            const isHighlighted = highlightColorCode === item.code;
-            const contrastText = getContrastTextColor(item.hex);
-            const isCompleted = completedColors.has(item.code);
+        {/* 折叠抽屉：BOM 颜色胶囊列表 */}
+        {isBomDrawerOpen && (
+          <div className="p-2 sm:p-3 border-t border-stone-100 bg-stone-50/70 max-h-48 overflow-y-auto custom-scrollbar animate-studio-in">
+            <div className="flex items-center justify-between text-xs text-stone-500 mb-2 px-1">
+              <span>点击色卡高亮定位，右侧打勾记录手工拼制进度</span>
+              <span className="font-mono text-[11px]">共计 {colorStats.list.length} 种色号 · 按用量降序排列</span>
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {colorStats.list.map((item) => {
+                const isHighlighted = highlightColorCode === item.code;
+                const contrastText = getContrastTextColor(item.hex);
+                const isCompleted = completedColors.has(item.code);
 
-            return (
-              <div
-                key={item.code}
-                className={`relative group inline-flex items-stretch rounded border text-xs overflow-hidden transition-all shadow-2xs select-none ${
-                  isCompleted ? 'opacity-55 border-stone-200' : ''
-                } ${
-                  isHighlighted
-                    ? 'ring-2 ring-amber-500 border-amber-500 shadow-sm scale-105 z-10'
-                    : 'border-stone-300 hover:border-stone-400 bg-white'
-                }`}
-              >
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (onToggleHighlightColorCode) {
-                      onToggleHighlightColorCode(item.code);
-                    }
-                    onSelectColorCode(item.code);
-                  }}
-                  className="inline-flex items-stretch active:scale-95 transition-transform"
-                  title={`点击在画布中高亮显示 [${item.code} ${item.name_zh}] · 用量 ${item.count} 颗 (${item.pct}%)\n点击右侧小对勾可标记拼装进度`}
-                >
-                  {/* 左侧色块 + 色号 (高对比度) */}
+                return (
                   <div
-                    className="px-2 py-0.5 sm:py-1 font-mono font-bold text-[11px] flex items-center justify-center min-w-[38px]"
-                    style={{ backgroundColor: item.hex, color: contrastText }}
+                    key={item.code}
+                    className={`relative group inline-flex items-stretch rounded border text-xs overflow-hidden transition-all shadow-2xs select-none ${
+                      isCompleted ? 'opacity-55 border-stone-200' : ''
+                    } ${
+                      isHighlighted
+                        ? 'ring-2 ring-amber-500 border-amber-500 shadow-sm scale-105 z-10'
+                        : 'border-stone-300 hover:border-stone-400 bg-white'
+                    }`}
                   >
-                    {isCompleted ? <span className="line-through opacity-80">{item.code}</span> : item.code}
-                  </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (onToggleHighlightColorCode) {
+                          onToggleHighlightColorCode(item.code);
+                        }
+                        onSelectColorCode(item.code);
+                      }}
+                      className="inline-flex items-stretch active:scale-95 transition-transform"
+                      title={`点击在画布中高亮显示 [${item.code} ${item.name_zh}] · 用量 ${item.count} 颗 (${item.pct}%)\n点击右侧小对勾可标记拼装进度`}
+                    >
+                      {/* 左侧色块 + 色号 (高对比度) */}
+                      <div
+                        className="px-2 py-0.5 sm:py-1 font-mono font-bold text-[11px] flex items-center justify-center min-w-[38px]"
+                        style={{ backgroundColor: item.hex, color: contrastText }}
+                      >
+                        {isCompleted ? <span className="line-through opacity-80">{item.code}</span> : item.code}
+                      </div>
 
-                  {/* 右侧白底精确用量颗数 */}
-                  <div className="px-1.5 py-0.5 sm:py-1 bg-white font-mono font-bold text-stone-900 text-[11px] flex items-center justify-center border-l border-stone-200 group-hover:bg-stone-50 min-w-[32px]">
-                    {item.count}
-                  </div>
-                </button>
+                      {/* 右侧白底精确用量颗数 */}
+                      <div className="px-1.5 py-0.5 sm:py-1 bg-white font-mono font-bold text-stone-900 text-[11px] flex items-center justify-center border-l border-stone-200 group-hover:bg-stone-50 min-w-[32px]">
+                        {item.count}
+                      </div>
+                    </button>
 
-                {/* 拼装进度打勾标记按键 */}
-                <button
-                  type="button"
-                  onClick={(e) => toggleColorCompleted(item.code, e)}
-                  className={`px-1 py-0.5 border-l border-stone-200 flex items-center justify-center transition-colors ${
-                    isCompleted
-                      ? 'bg-emerald-500 text-white'
-                      : 'bg-stone-50 text-stone-300 hover:text-emerald-600 hover:bg-emerald-50'
-                  }`}
-                  title={isCompleted ? '已拼完此色（点击取消完成标记）' : '标记此色已拼装完成'}
-                >
-                  <Check className={`w-3 h-3 ${isCompleted ? 'stroke-[3]' : 'stroke-[2]'}`} />
-                </button>
-              </div>
-            );
-          })}
-        </div>
+                    {/* 拼装进度打勾标记按键 */}
+                    <button
+                      type="button"
+                      onClick={(e) => toggleColorCompleted(item.code, e)}
+                      className={`px-1 py-0.5 border-l border-stone-200 flex items-center justify-center transition-colors ${
+                        isCompleted
+                          ? 'bg-emerald-500 text-white'
+                          : 'bg-stone-50 text-stone-300 hover:text-emerald-600 hover:bg-emerald-50'
+                      }`}
+                      title={isCompleted ? '已拼完此色（点击取消完成标记）' : '标记此色已拼装完成'}
+                    >
+                      <Check className={`w-3 h-3 ${isCompleted ? 'stroke-[3]' : 'stroke-[2]'}`} />
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

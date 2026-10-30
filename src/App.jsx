@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Sliders, Palette } from 'lucide-react'; // # 移动端标签图标
 import Navbar from './components/Navbar';
+import LeftToolRail from './components/LeftToolRail';
 import OriginalImageCard from './components/OriginalImageCard';
 import ParameterSettingsCard from './components/ParameterSettingsCard';
-import PatternPreviewHeader from './components/PatternPreviewHeader';
 import CanvasEditor from './components/CanvasEditor';
 import SettingsModal from './components/SettingsModal';
 import ExportModal from './components/ExportModal';
@@ -15,6 +15,10 @@ export default function App() {
   const [currentImageSrc, setCurrentImageSrc] = useState(defaultSampleImg); // # 当前输入图像源
   const [patternName, setPatternName] = useState('拼豆图纸 - 超清全色谱'); // # 图纸名称
   const [activeMobileTab, setActiveMobileTab] = useState('canvas'); // # 移动端激活标签: 'control' | 'canvas'
+
+  // 工具栏与绘图交互状态 (由 LeftToolRail 与 CanvasEditor 联动)
+  const [currentTool, setCurrentTool] = useState('pencil'); // 'pencil' | 'bucket' | 'picker' | 'eraser' | 'hand'
+  const [beadStyle, setBeadStyle] = useState('gloss'); // 'gloss' (微珠) | 'pixel' (像素) | 'bead' (打孔)
 
   // 默认升级至 160×160 超高清网格，且完全不设上限
   const [gridWidth, setGridWidth] = useState(160);
@@ -31,6 +35,7 @@ export default function App() {
   const [paletteBrand, setPaletteBrand] = useState('MARD');
 
   // 显示开关
+  const [showGridLines, setShowGridLines] = useState(true);
   const [showColorCodes, setShowColorCodes] = useState(true);
   const [showRulers, setShowRulers] = useState(false); // # 默认不选中刻度标尺
   const [compareMode, setCompareMode] = useState(false);
@@ -235,30 +240,43 @@ export default function App() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#f5f6f5]">
-      {/* 顶部导航 */}
+    <div className="flex flex-col h-screen w-screen overflow-hidden bg-[#f8f9ff]">
+      {/* 隐藏的本地图片选择器 (由左侧工具轨触发) */}
+      <input
+        id="stitch-local-upload-input"
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file) {
+            const reader = new FileReader();
+            reader.onload = (ev) => handleImageChanged(ev.target.result);
+            reader.readAsDataURL(file);
+          }
+        }}
+      />
+
+      {/* Google Stitch: 顶部全局导航栏 (48px Top App Bar) */}
       <Navbar
+        patternName={patternName}
+        onPatternNameChange={setPatternName}
+        compareMode={compareMode}
+        onToggleCompareMode={() => setCompareMode(!compareMode)}
+        undo={handleUndo}
+        redo={handleRedo}
+        canUndo={historyIndex > 0}
+        canRedo={historyIndex < history.length - 1}
         onOpenSettings={() => setIsSettingsOpen(true)}
         onOpenExport={() => setIsExportOpen(true)}
         onReset={handleResetCanvas}
+        onPrint={handlePrint}
         hasApiKey={hasApiKey}
       />
 
       {/* 移动端沉浸式视图切换 Tabs (仅在小屏下展示) */}
-      <div className="lg:hidden flex items-center justify-center px-3 py-2 bg-white/90 backdrop-blur-md border-b border-stone-200 sticky top-[49px] sm:top-[53px] z-20">
+      <div className="lg:hidden flex items-center justify-center px-3 py-1.5 bg-white border-b border-stone-200 shrink-0 z-20">
         <div className="flex bg-stone-100 p-1 rounded-xl w-full max-w-sm shadow-inner">
-          <button
-            type="button"
-            onClick={() => setActiveMobileTab('control')}
-            className={`flex-1 py-1.5 text-xs font-semibold rounded-lg flex items-center justify-center gap-1.5 transition-all ${
-              activeMobileTab === 'control'
-                ? 'bg-white text-stone-900 shadow-xs'
-                : 'text-stone-500 hover:text-stone-900'
-            }`}
-          >
-            <Sliders className="w-3.5 h-3.5" />
-            <span>控制与调色</span>
-          </button>
           <button
             type="button"
             onClick={() => setActiveMobileTab('canvas')}
@@ -269,86 +287,123 @@ export default function App() {
             }`}
           >
             <Palette className="w-3.5 h-3.5" />
-            <span>图纸与画布</span>
+            <span>图纸画布</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveMobileTab('control')}
+            className={`flex-1 py-1.5 text-xs font-semibold rounded-lg flex items-center justify-center gap-1.5 transition-all ${
+              activeMobileTab === 'control'
+                ? 'bg-white text-stone-900 shadow-xs'
+                : 'text-stone-500 hover:text-stone-900'
+            }`}
+          >
+            <Sliders className="w-3.5 h-3.5" />
+            <span>参数与物料</span>
           </button>
         </div>
       </div>
 
-      {/* 主工作区 */}
-      <main className="flex-1 max-w-[1750px] w-full mx-auto p-2 sm:p-5 grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-5 items-stretch">
-        {/* 左栏 (4 列): 原图上传与参数控制面板 */}
-        <div className={`lg:col-span-4 space-y-4 flex flex-col justify-start ${activeMobileTab === 'control' ? 'block' : 'hidden lg:block'}`}>
-          <OriginalImageCard
-            currentImageSrc={currentImageSrc}
-            onImageChanged={handleImageChanged}
-            onOpenSettings={() => setIsSettingsOpen(true)}
-            hasApiKey={hasApiKey}
-            gridSize={gridWidth}
-            onSelectPreset={handleSelectPreset}
-          />
+      {/* Google Stitch: 三栏式全屏沉浸工坊工作台 (Main Three-Column Workspace) */}
+      <main className="flex-1 flex flex-row overflow-hidden relative min-h-0">
+        {/* 1. 左侧 56px 极简垂直工具轨 (Left Tool Rail) */}
+        <LeftToolRail
+          currentTool={currentTool}
+          onSelectTool={setCurrentTool}
+          onUploadClick={() => document.getElementById('stitch-local-upload-input')?.click()}
+          showGridLines={showGridLines}
+          onToggleGridLines={() => setShowGridLines(!showGridLines)}
+          showRulers={showRulers}
+          onToggleRulers={() => setShowRulers(!showRulers)}
+          beadStyle={beadStyle}
+          onBeadStyleChange={setBeadStyle}
+          className="hidden md:flex"
+        />
 
-          <ParameterSettingsCard
-            gridWidth={gridWidth}
-            gridHeight={gridHeight}
-            onGridSizeChange={handleGridSizeChange}
-            onApplyPresetSize={handleApplyPresetSize}
-            onAutoDetectDensity={handleAutoDetectDensity}
-            keepAspectRatio={keepAspectRatio}
-            onToggleKeepAspectRatio={() => setKeepAspectRatio(!keepAspectRatio)}
-            brightness={brightness}
-            onBrightnessChange={handleBrightnessChange}
-            contrast={contrast}
-            onContrastChange={handleContrastChange}
-            saturation={saturation}
-            onSaturationChange={handleSaturationChange}
-            enableColorLimit={enableColorLimit}
-            onToggleColorLimit={handleToggleColorLimit}
-            maxColors={maxColors}
-            onMaxColorsChange={handleMaxColorsChange}
+        {/* 2. 中央沉浸式触感拼豆画布 (Pegboard Studio Canvas) */}
+        <div className={`flex-1 h-full min-w-0 relative flex flex-col overflow-hidden bg-[#eff4ff] ${activeMobileTab === 'canvas' ? 'flex' : 'hidden lg:flex'}`}>
+          <CanvasEditor
+            gridData={gridData}
+            onGridChange={updateGridManual}
+            originalImageSrc={currentImageSrc}
+            selectedColorCode={selectedColorCode}
+            onSelectColorCode={setSelectedColorCode}
+            highlightColorCode={highlightColorCode}
+            onToggleHighlightColorCode={(code) => setHighlightColorCode(prev => prev === code ? null : code)}
             paletteBrand={paletteBrand}
-            onPaletteBrandChange={handlePaletteBrandChange}
-            onResetFilters={handleResetFilters}
-          />
-        </div>
-
-        {/* 右栏 (8 列): 图纸预览与超清工作台 (PC 端自动延伸与左侧等高齐平) */}
-        <div className={`lg:col-span-8 flex flex-col h-[calc(100vh-130px)] min-h-[560px] lg:h-auto lg:self-stretch lg:min-h-[960px] xl:min-h-[1050px] rounded-2xl bg-white border border-stone-200 shadow-xs overflow-hidden ${activeMobileTab === 'canvas' ? 'flex' : 'hidden lg:flex'}`}>
-          <PatternPreviewHeader
-            patternName={patternName}
-            onPatternNameChange={setPatternName}
+            showGridLines={showGridLines}
+            onToggleGridLines={() => setShowGridLines(!showGridLines)}
             showColorCodes={showColorCodes}
             onToggleColorCodes={() => setShowColorCodes(!showColorCodes)}
             showRulers={showRulers}
             onToggleRulers={() => setShowRulers(!showRulers)}
             compareMode={compareMode}
             onToggleCompareMode={() => setCompareMode(!compareMode)}
+            undo={handleUndo}
+            redo={handleRedo}
+            canUndo={historyIndex > 0}
+            canRedo={historyIndex < history.length - 1}
+            patternName={patternName}
+            onPatternNameChange={setPatternName}
             onReset={handleResetCanvas}
             onPrint={handlePrint}
             onDownloadPng={() => setIsExportOpen(true)}
             onExportBom={() => setIsExportOpen(true)}
+            currentTool={currentTool}
+            onToolChange={setCurrentTool}
+            beadStyle={beadStyle}
+            onBeadStyleChange={setBeadStyle}
           />
+        </div>
 
-          <div className="flex-1 overflow-hidden relative">
-            <CanvasEditor
-              gridData={gridData}
-              onGridChange={updateGridManual}
-              originalImageSrc={currentImageSrc}
-              selectedColorCode={selectedColorCode}
-              onSelectColorCode={setSelectedColorCode}
-              highlightColorCode={highlightColorCode}
-              onToggleHighlightColorCode={(code) => setHighlightColorCode(prev => prev === code ? null : code)}
+        {/* 3. 右侧 360px 参数控制与物料清单检查器 (Right Inspector & BOM Panel) */}
+        <aside className={`w-full lg:w-[360px] xl:w-[380px] shrink-0 h-full bg-white border-l border-stone-200/90 flex flex-col z-20 overflow-hidden ${activeMobileTab === 'control' ? 'flex' : 'hidden lg:flex'}`}>
+          {/* 面板顶栏 */}
+          <div className="h-10 px-3.5 border-b border-stone-200/80 bg-stone-50/90 flex items-center justify-between shrink-0 select-none">
+            <div className="flex items-center gap-1.5 text-xs font-bold text-stone-800">
+              <Sliders className="w-3.5 h-3.5 text-rose-600" />
+              <span>参数控制与物料清单</span>
+            </div>
+            <span className="font-mono text-[10px] bg-stone-200/70 px-1.5 py-0.5 rounded text-stone-600 font-semibold">
+              CAD ENGINE V2.4
+            </span>
+          </div>
+
+          {/* 内部独立滚动区域 (解决由于右侧长导致的页面整体滚动与左侧巨大空白) */}
+          <div className="flex-1 overflow-y-auto custom-scrollbar p-3 space-y-3">
+            <OriginalImageCard
+              currentImageSrc={currentImageSrc}
+              onImageChanged={handleImageChanged}
+              onOpenSettings={() => setIsSettingsOpen(true)}
+              hasApiKey={hasApiKey}
+              gridSize={gridWidth}
+              onSelectPreset={handleSelectPreset}
+            />
+
+            <ParameterSettingsCard
+              gridWidth={gridWidth}
+              gridHeight={gridHeight}
+              onGridSizeChange={handleGridSizeChange}
+              onApplyPresetSize={handleApplyPresetSize}
+              onAutoDetectDensity={handleAutoDetectDensity}
+              keepAspectRatio={keepAspectRatio}
+              onToggleKeepAspectRatio={() => setKeepAspectRatio(!keepAspectRatio)}
+              brightness={brightness}
+              onBrightnessChange={handleBrightnessChange}
+              contrast={contrast}
+              onContrastChange={handleContrastChange}
+              saturation={saturation}
+              onSaturationChange={handleSaturationChange}
+              enableColorLimit={enableColorLimit}
+              onToggleColorLimit={handleToggleColorLimit}
+              maxColors={maxColors}
+              onMaxColorsChange={handleMaxColorsChange}
               paletteBrand={paletteBrand}
-              showGridLines={true}
-              showColorCodes={showColorCodes}
-              showRulers={showRulers}
-              compareMode={compareMode}
-              undo={handleUndo}
-              redo={handleRedo}
-              canUndo={historyIndex > 0}
-              canRedo={historyIndex < history.length - 1}
+              onPaletteBrandChange={handlePaletteBrandChange}
+              onResetFilters={handleResetFilters}
             />
           </div>
-        </div>
+        </aside>
       </main>
 
       {/* 弹窗组件 */}

@@ -64,3 +64,30 @@
 .animate-studio-in {
   animation: studioFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
+
+/* Google Stitch Tactile Pegboard Surface */
+.pegboard-surface {
+  background-color: #eff4ff;
+  background-image: radial-gradient(#cbd5e1 1.5px, transparent 1.5px);
+  background-size: 16px 16px;
+}
+
+/* Tactile 3D Bead Effect */
+.tactile-bead {
+  position: relative;
+  border-radius: 9999px;
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.6), inset 0 -1.5px 2px rgba(0, 0, 0, 0.35), 0 1px 2px rgba(15, 23, 42, 0.12);
+}
+.tactile-bead::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 32%;
+  height: 32%;
+  border-radius: 9999px;
+  background-color: #1e293b;
+  box-shadow: inset 0 1px 1.5px rgba(0, 0, 0, 0.8), 0 0.5px 0.5px rgba(255, 255, 255, 0.4);
+}
+

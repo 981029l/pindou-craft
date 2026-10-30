@@ -1,106 +1,185 @@
 import React from 'react';
-import { Settings, Download, RefreshCw } from 'lucide-react';
+import { 
+  Settings, 
+  Download, 
+  RotateCcw, 
+  FileText, 
+  LayoutGrid, 
+  SplitSquareVertical, 
+  Undo2, 
+  Redo2, 
+  Printer 
+} from 'lucide-react';
 import DitherGradient from './ui/DitherGradient';
-import TextMorph from './ui/TextMorph';
 
-export default function Navbar({ onOpenSettings, onOpenExport, onReset, hasApiKey }) { // # 顶部导航组件
+/**
+ * Google Stitch 风格: 顶部全局导航栏 (Top App Bar)
+ * 高度 48px (h-12)，集成品牌、图纸命名、模式切换、撤销重做与导出中心
+ */
+export default function Navbar({
+  patternName = '拼豆图纸 - 超清全色谱',
+  onPatternNameChange,
+  compareMode = false,
+  onToggleCompareMode,
+  undo,
+  redo,
+  canUndo = false,
+  canRedo = false,
+  onOpenSettings,
+  onOpenExport,
+  onReset,
+  onPrint,
+  hasApiKey = false
+}) {
   return (
-    <header className="sticky top-0 z-30 w-full px-3 sm:px-8 py-2.5 sm:py-3 bg-white/90 backdrop-blur-md border-b border-stone-200/90 shadow-xs relative overflow-hidden">
-      {/* 极轻量复古 Bayer 抖动渐变底层 (来自 Componentry DitherGradient 风格) */}
+    <header className="h-12 w-full px-3 sm:px-4 bg-white/95 backdrop-blur-md border-b border-stone-200/90 shadow-2xs relative z-30 shrink-0 flex items-center justify-between gap-3 select-none">
+      {/* 极轻量底纹 */}
       <DitherGradient
         colorFrom="#4f46e5"
         colorMid="#7c3aed"
         colorTo="#ec4899"
-        intensity={0.06}
+        intensity={0.04}
         speed={0.8}
         className="opacity-10 pointer-events-none"
       />
 
-      <div className="max-w-[1600px] mx-auto flex items-center justify-between gap-2 sm:gap-4 relative z-10">
-        {/* 左侧品牌与工坊标识 */}
-        <div className="flex items-center gap-2 sm:gap-3.5 min-w-0">
-          <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-stone-900 flex items-center justify-center shadow-xs shrink-0 ring-1 ring-white/20">
-            <div className="grid grid-cols-2 gap-1 p-1 sm:p-1.5">
-              <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-[#f87171]" />
-              <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-[#fbbf24]" />
-              <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-[#38bdf8]" />
-              <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-[#4ade80]" />
-            </div>
-          </div>
-          <div className="min-w-0">
-            <div className="flex items-center gap-1.5 sm:gap-2.5">
-              <h1 className="text-sm sm:text-lg font-bold text-stone-900 font-display tracking-tight truncate">
-                PinDou Atelier
-              </h1>
-              <span className="hidden sm:inline-flex items-center gap-1.5 text-[11px] font-medium px-2 py-0.5 rounded-full bg-stone-100/90 backdrop-blur-sm text-stone-700 border border-stone-200 shrink-0">
-                <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
-                </span>
-                拼豆手作工坊
-              </span>
-            </div>
-            <div className="hidden lg:flex items-center gap-1.5 text-xs text-stone-500 font-normal">
-              <span className="text-[10px] font-bold tracking-widest text-stone-400 uppercase font-mono">LIVE ATELIER</span>
-              <span className="text-stone-300">·</span>
-              <TextMorph
-                words={[
-                  "MARD 221 / Perler / Artkal 全色谱高保真匹配",
-                  "AI 智能图纸重构 · 毫秒级颜色量化映射",
-                  "1:1 实体尺寸对位 · 工业级物料 BOM 耗材清单",
-                  "手工拼豆实体打卡进度追踪 · 高保真微珠光泽",
-                  "零裁切无损直通 · 支持 2.6mm/5.0mm 双规制"
-                ]}
-                interval={3600}
-                className="text-stone-600 font-medium"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* 右侧功能操作区 */}
-        <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
-          {/* AI 状态指示 */}
-          <button 
-            onClick={onOpenSettings}
-            className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-stone-50/90 backdrop-blur-sm border border-stone-200 hover:border-stone-400 transition-colors text-xs text-stone-600 shadow-2xs"
-            title="点击配置自定义 AI 端点与密钥"
-          >
-            <span className="relative flex h-2 w-2">
-              <span className={`animate-ping absolute inline-flex h-full w-full rounded-full ${hasApiKey ? 'bg-emerald-400' : 'bg-stone-300'} opacity-75`} />
-              <span className={`relative inline-flex rounded-full h-2 w-2 ${hasApiKey ? 'bg-emerald-500' : 'bg-stone-400'}`} />
+      {/* 左侧：品牌与图纸命名面包屑 */}
+      <div className="flex items-center gap-3 min-w-0 z-10">
+        <div className="flex items-center gap-2 shrink-0">
+          <div className="w-7 h-7 rounded-lg bg-rose-600 text-white flex items-center justify-center font-bold shadow-xs ring-1 ring-black/5">
+            <span className="w-3.5 h-3.5 rounded-full border-2 border-white/90 flex items-center justify-center">
+              <span className="w-1 h-1 rounded-full bg-white" />
             </span>
-            <span className="font-medium">AI: {hasApiKey ? '已连接' : '未配置 (点击设置)'}</span>
-          </button>
+          </div>
+          <span className="font-display font-bold text-sm tracking-tight text-stone-900 hidden sm:inline">
+            BeadCraft Studio
+          </span>
+        </div>
 
-          {/* 设置按钮 */}
-          <button
-            onClick={onOpenSettings}
-            className="p-1.5 sm:p-2 rounded-xl bg-stone-50 hover:bg-stone-100 border border-stone-200 text-stone-600 hover:text-stone-900 transition-colors shadow-2xs"
-            title="自定义 AI 服务端点与 Key"
-          >
-            <Settings className="w-4 h-4" />
-          </button>
+        <div className="h-4 w-px bg-stone-200 hidden sm:block shrink-0" />
 
-          {/* 清空重置 */}
-          <button
-            onClick={onReset}
-            className="p-1.5 sm:p-2 rounded-xl bg-stone-50 hover:bg-rose-50 border border-stone-200 text-stone-500 hover:text-rose-600 transition-colors shadow-2xs"
-            title="清空画布"
-          >
-            <RefreshCw className="w-4 h-4" />
-          </button>
+        {/* 图纸名称输入框 */}
+        <div className="flex items-center gap-1.5 bg-stone-50 hover:bg-stone-100/80 px-2.5 py-1 rounded-lg border border-stone-200/70 transition-colors max-w-[200px] sm:max-w-[240px]">
+          <FileText className="w-3.5 h-3.5 text-stone-400 shrink-0" />
+          <input
+            className="bg-transparent border-none p-0 text-stone-800 text-xs font-mono font-medium focus:outline-hidden w-full truncate"
+            type="text"
+            value={patternName}
+            onChange={(e) => onPatternNameChange && onPatternNameChange(e.target.value)}
+            placeholder="输入图纸名称..."
+          />
+          <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" title="已就绪 · 本地实时同步" />
+        </div>
+      </div>
 
-          {/* 导出图纸主按键 */}
+      {/* 中部：视口模式切换与历史撤销重做 (桌面端) */}
+      <div className="hidden md:flex items-center gap-3 z-10">
+        {/* 模式切换器 */}
+        <div className="flex items-center p-0.5 bg-stone-100 rounded-lg border border-stone-200/60">
           <button
-            onClick={onOpenExport}
-            className="flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-4 py-1.5 rounded-xl bg-stone-900 hover:bg-stone-800 text-white text-xs sm:text-sm font-medium shadow-xs transition-all active:scale-95"
+            type="button"
+            onClick={() => compareMode && onToggleCompareMode && onToggleCompareMode()}
+            className={`px-2.5 py-1 rounded-md text-xs font-semibold flex items-center gap-1.5 transition-all ${
+              !compareMode
+                ? 'bg-white text-stone-900 shadow-2xs font-bold'
+                : 'text-stone-500 hover:text-stone-900'
+            }`}
           >
-            <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-            <span className="hidden sm:inline">导出图纸 & BOM</span>
-            <span className="sm:hidden font-medium">导出</span>
+            <LayoutGrid className="w-3.5 h-3.5" />
+            <span>拼豆图纸模式</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => !compareMode && onToggleCompareMode && onToggleCompareMode()}
+            className={`px-2.5 py-1 rounded-md text-xs font-semibold flex items-center gap-1.5 transition-all ${
+              compareMode
+                ? 'bg-white text-rose-600 shadow-2xs font-bold'
+                : 'text-stone-500 hover:text-stone-900'
+            }`}
+          >
+            <SplitSquareVertical className="w-3.5 h-3.5" />
+            <span>原图对比卷帘</span>
           </button>
         </div>
+
+        <div className="h-4 w-px bg-stone-200" />
+
+        {/* 撤销 / 重做 */}
+        <div className="flex items-center gap-1">
+          <button
+            type="button"
+            onClick={undo}
+            disabled={!canUndo}
+            className={`p-1.5 rounded-lg border transition-all ${
+              canUndo
+                ? 'bg-white border-stone-200 text-stone-700 hover:bg-stone-50 active:scale-95 shadow-2xs'
+                : 'border-transparent text-stone-300 cursor-not-allowed'
+            }`}
+            title="撤销 (Ctrl+Z)"
+          >
+            <Undo2 className="w-3.5 h-3.5" />
+          </button>
+          <button
+            type="button"
+            onClick={redo}
+            disabled={!canRedo}
+            className={`p-1.5 rounded-lg border transition-all ${
+              canRedo
+                ? 'bg-white border-stone-200 text-stone-700 hover:bg-stone-50 active:scale-95 shadow-2xs'
+                : 'border-transparent text-stone-300 cursor-not-allowed'
+            }`}
+            title="重做 (Ctrl+Y)"
+          >
+            <Redo2 className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      </div>
+
+      {/* 右侧：重置、打印与主导出按钮 */}
+      <div className="flex items-center gap-1.5 sm:gap-2 z-10 shrink-0">
+        {/* 重置画布 */}
+        <button
+          type="button"
+          onClick={onReset}
+          className="p-1.5 sm:px-2.5 sm:py-1 rounded-lg border border-stone-200 bg-white hover:bg-rose-50 text-stone-600 hover:text-rose-600 transition-colors text-xs font-medium flex items-center gap-1 shadow-2xs active:scale-95"
+          title="清空画布上所有豆子"
+        >
+          <RotateCcw className="w-3.5 h-3.5" />
+          <span className="hidden sm:inline">重置</span>
+        </button>
+
+        {/* 打印 */}
+        {onPrint && (
+          <button
+            type="button"
+            onClick={onPrint}
+            className="hidden lg:flex items-center gap-1 px-2.5 py-1 rounded-lg border border-stone-200 bg-white hover:bg-stone-50 text-stone-600 transition-colors text-xs font-medium shadow-2xs active:scale-95"
+            title="直接调用浏览器高精打印"
+          >
+            <Printer className="w-3.5 h-3.5" />
+            <span>打印</span>
+          </button>
+        )}
+
+        {/* AI 配置状态 */}
+        <button
+          type="button"
+          onClick={onOpenSettings}
+          className="p-1.5 rounded-lg border border-stone-200 bg-white hover:bg-stone-50 text-stone-600 transition-colors shadow-2xs active:scale-95"
+          title="配置 AI 端点与密钥"
+        >
+          <Settings className="w-3.5 h-3.5" />
+        </button>
+
+        {/* 主导出按钮 (Stitch 标志性浆果红) */}
+        <button
+          type="button"
+          onClick={onOpenExport}
+          className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-rose-600 hover:bg-rose-700 active:scale-95 text-white text-xs font-semibold shadow-xs transition-all"
+        >
+          <Download className="w-3.5 h-3.5" />
+          <span>导出图纸 & BOM</span>
+        </button>
       </div>
     </header>
   );
