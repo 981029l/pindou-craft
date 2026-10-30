@@ -7,5 +7,14 @@ export default defineConfig({
   server: {
     port: 3000, // 本地开发端口 3000
     open: true, // 启动时自动打开浏览器
+    proxy: {
+      // 解决浏览器直连第三方服务被 Cloudflare 拦截 OPTIONS 导致的 CORS 跨域问题
+      '/api-l0veyou': {
+        target: 'https://l0veyou.com',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api-l0veyou/, ''),
+        secure: false,
+      },
+    },
   },
 });

@@ -47,6 +47,19 @@ async function resolveImageUrlToLocalBlob(url) {
   return url;
 }
 
+// 智能基准端点解析：本地开发环境下优先通过 Vite 内部反向代理 (/api-l0veyou) 转发，
+// 彻底解决 Cloudflare 针对浏览器 OPTIONS 预检请求返回 403 导致的 CORS 跨域阻断问题
+export function resolveEffectiveBaseUrl(rawBaseUrl) {
+  const clean = (rawBaseUrl || 'https://l0veyou.com').replace(/\/+$/, '');
+  if (typeof window !== 'undefined') {
+    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    if (isLocal && clean.includes('l0veyou.com')) {
+      return '/api-l0veyou';
+    }
+  }
+  return clean;
+}
+
 export async function generateAiImage({ prompt, customConfig = {} }) {
   const config = { ...getStoredAiConfig(), ...customConfig };
 
@@ -54,7 +67,7 @@ export async function generateAiImage({ prompt, customConfig = {} }) {
     throw new Error('请先在右上角【设置】中配置您的 AI API Key');
   }
 
-  const cleanBase = (config.baseUrl || 'https://l0veyou.com').replace(/\/+$/, '');
+  const cleanBase = resolveEffectiveBaseUrl(config.baseUrl);
   let endpoint = `${cleanBase}/images/generations`;
 
   const requestId = 'pindou_' + Math.random().toString(36).substring(2, 10) + Date.now().toString(36);
@@ -93,10 +106,10 @@ export async function generateAiImage({ prompt, customConfig = {} }) {
           body: JSON.stringify(requestBody),
         });
       } catch (retryErr) {
-        throw new Error(`网络连接失败: ${netErr.message || '请检查网络或代理连接'}`);
+        throw new Error(`网络请求失败 (CORS或连接异常): ${netErr.message || '请检查代理或服务状态'}`);
       }
     } else {
-      throw new Error(`网络连接失败: ${netErr.message || '请检查网络或代理连接'}`);
+      throw new Error(`网络请求失败 (CORS或连接异常): ${netErr.message || '请检查代理或服务状态'}`);
     }
   }
 
@@ -161,7 +174,7 @@ export async function editAiImage({ imageFile, prompt, customConfig = {} }) {
     throw new Error('请先在右上角【设置】中配置您的 AI API Key');
   }
 
-  const cleanBase = (config.baseUrl || 'https://l0veyou.com').replace(/\/+$/, '');
+  const cleanBase = resolveEffectiveBaseUrl(config.baseUrl);
   let endpoint = `${cleanBase}/images/edits`;
 
   const requestId = 'pindou_edit_' + Math.random().toString(36).substring(2, 10) + Date.now().toString(36);
@@ -197,10 +210,10 @@ export async function editAiImage({ imageFile, prompt, customConfig = {} }) {
           body: formData,
         });
       } catch (retryErr) {
-        throw new Error(`网络连接失败: ${netErr.message || '请检查网络或代理连接'}`);
+        throw new Error(`以图生图请求失败 (CORS或连接异常): ${netErr.message || '请检查代理或服务状态'}`);
       }
     } else {
-      throw new Error(`网络连接失败: ${netErr.message || '请检查网络或代理连接'}`);
+      throw new Error(`以图生图请求失败 (CORS或连接异常): ${netErr.message || '请检查代理或服务状态'}`);
     }
   }
 
@@ -257,7 +270,8 @@ export async function editAiImage({ imageFile, prompt, customConfig = {} }) {
 
 export async function testAiConnection(config) {
   try {
-    const endpoint = `${config.baseUrl.replace(/\/+$/, '')}/models`;
+    const cleanBase = resolveEffectiveBaseUrl(config.baseUrl);
+    const endpoint = `${cleanBase}/models`;
     const response = await fetch(endpoint, {
       method: 'GET',
       headers: {
