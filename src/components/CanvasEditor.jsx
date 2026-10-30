@@ -855,56 +855,56 @@ export default function CanvasEditor({ // # 画布编辑器与竞品级用料矩
         </button>
 
         {/* Google Stitch: Floating Tactical Canvas HUD Toolbar at bottom */}
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-30 flex items-center bg-white/95 backdrop-blur-md px-3.5 py-1.5 rounded-xl shadow-lg border border-stone-200/90 gap-2.5 sm:gap-3 text-xs select-none">
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-30 flex items-center whitespace-nowrap bg-white/95 backdrop-blur-md px-3.5 py-1.5 rounded-2xl shadow-lg border border-stone-200/90 gap-2.5 sm:gap-3 text-xs select-none shrink-0">
           {/* 网格标线开关 */}
-          <label className="flex items-center gap-1.5 cursor-pointer text-stone-700 font-medium hover:text-stone-900 transition-colors">
+          <label className="flex items-center gap-1.5 cursor-pointer text-stone-700 font-medium hover:text-stone-900 transition-colors shrink-0 whitespace-nowrap">
             <input
               type="checkbox"
               checked={showGridLines}
               onChange={() => onToggleGridLines && onToggleGridLines()}
-              className="rounded border-stone-300 text-rose-600 focus:ring-rose-500 w-3.5 h-3.5 cursor-pointer"
+              className="rounded border-stone-300 text-rose-600 focus:ring-rose-500 w-3.5 h-3.5 cursor-pointer shrink-0"
             />
-            <span className="text-[11px] font-semibold">网格线</span>
+            <span className="text-[11px] font-semibold whitespace-nowrap">网格线</span>
           </label>
 
-          <div className="w-px h-3.5 bg-stone-200" />
+          <div className="w-px h-3.5 bg-stone-200 shrink-0" />
 
           {/* 覆叠色号标字 */}
-          <label className="flex items-center gap-1.5 cursor-pointer text-stone-700 font-medium hover:text-stone-900 transition-colors">
+          <label className="flex items-center gap-1.5 cursor-pointer text-stone-700 font-medium hover:text-stone-900 transition-colors shrink-0 whitespace-nowrap">
             <input
               type="checkbox"
               checked={showColorCodes}
               onChange={() => onToggleColorCodes && onToggleColorCodes()}
-              className="rounded border-stone-300 text-rose-600 focus:ring-rose-500 w-3.5 h-3.5 cursor-pointer"
+              className="rounded border-stone-300 text-rose-600 focus:ring-rose-500 w-3.5 h-3.5 cursor-pointer shrink-0"
             />
-            <span className="text-[11px] font-semibold">色号标字</span>
+            <span className="text-[11px] font-semibold whitespace-nowrap">色号标字</span>
           </label>
 
-          <div className="w-px h-3.5 bg-stone-200" />
+          <div className="w-px h-3.5 bg-stone-200 shrink-0" />
 
           {/* 颗粒规格药丸 */}
-          <div className="hidden sm:flex items-center gap-1 bg-stone-100 px-2 py-0.5 rounded-lg font-mono text-[10px]">
-            <span className="w-2 h-2 rounded-full bg-rose-600 inline-block" />
-            <span className="font-bold text-stone-800">2.6mm 迷你豆</span>
-            <span className="text-stone-400">/ 1:1实物</span>
+          <div className="hidden sm:flex items-center gap-1.5 bg-stone-100 px-2.5 py-1 rounded-lg font-mono text-[10px] shrink-0 whitespace-nowrap">
+            <span className="w-2 h-2 rounded-full bg-rose-600 inline-block shrink-0" />
+            <span className="font-bold text-stone-800 whitespace-nowrap">2.6mm 迷你豆</span>
+            <span className="text-stone-400 whitespace-nowrap">/ 1:1 实物比例</span>
           </div>
 
-          <div className="w-px h-3.5 bg-stone-200 hidden sm:block" />
+          <div className="w-px h-3.5 bg-stone-200 hidden sm:block shrink-0" />
 
           {/* 缩放控制器 */}
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1 shrink-0 whitespace-nowrap">
             <button
               type="button"
               onClick={() => {
                 isUserZoomedRef.current = true;
                 setZoom(prev => Math.max(0.02, Number((prev - 0.2).toFixed(3))));
               }}
-              className="p-1 rounded hover:bg-stone-100 text-stone-500 hover:text-stone-900 transition-colors"
+              className="p-1 rounded hover:bg-stone-100 text-stone-500 hover:text-stone-900 transition-colors shrink-0"
               title="缩小"
             >
               <ZoomOut className="w-3.5 h-3.5" />
             </button>
-            <span className="font-mono font-bold text-stone-700 px-1 min-w-[36px] text-center text-[11px]">
+            <span className="font-mono font-bold text-stone-700 px-1 min-w-[38px] text-center text-[11px] shrink-0 whitespace-nowrap">
               {Math.round(zoom * 100)}%
             </span>
             <button
@@ -913,7 +913,7 @@ export default function CanvasEditor({ // # 画布编辑器与竞品级用料矩
                 isUserZoomedRef.current = true;
                 setZoom(prev => Math.min(8.0, Number((prev + 0.2).toFixed(3))));
               }}
-              className="p-1 rounded hover:bg-stone-100 text-stone-500 hover:text-stone-900 transition-colors"
+              className="p-1 rounded hover:bg-stone-100 text-stone-500 hover:text-stone-900 transition-colors shrink-0"
               title="放大"
             >
               <ZoomIn className="w-3.5 h-3.5" />
@@ -921,27 +921,27 @@ export default function CanvasEditor({ // # 画布编辑器与竞品级用料矩
             <button
               type="button"
               onClick={fitToViewport}
-              className="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-stone-900 hover:bg-stone-800 text-white shadow-2xs transition-colors"
+              className="px-2 py-1 rounded-lg text-[10px] font-bold bg-stone-900 hover:bg-stone-800 text-white shadow-2xs transition-colors shrink-0 whitespace-nowrap"
               title="铺满自适应视口"
             >
               适应
             </button>
           </div>
 
-          <div className="w-px h-3.5 bg-stone-200" />
+          <div className="w-px h-3.5 bg-stone-200 shrink-0" />
 
           {/* 当前激活画笔色卡弹窗快捷入口 */}
           <button
             type="button"
             onClick={() => setShowQuickPalette(true)}
-            className="flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-stone-100 hover:bg-stone-200 text-stone-800 text-xs font-mono font-bold transition-colors shadow-2xs border border-stone-200/60"
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-stone-100 hover:bg-stone-200 text-stone-800 text-xs font-mono font-bold transition-colors shadow-2xs border border-stone-200/60 shrink-0 whitespace-nowrap"
             title="挑选画笔颜色"
           >
             <span
-              className="w-3 h-3 rounded-xs border border-black/20"
+              className="w-3 h-3 rounded-xs border border-black/20 shrink-0"
               style={{ backgroundColor: activeColorInfo?.hex || '#000000' }}
             />
-            <span>{selectedColorCode}</span>
+            <span className="whitespace-nowrap">{selectedColorCode}</span>
           </button>
         </div>
 
