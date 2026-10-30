@@ -54,32 +54,78 @@ export async function generateAiImage({ prompt, customConfig = {} }) {
     throw new Error('请先在右上角【设置】中配置您的 AI API Key');
   }
 
-  const endpoint = `${config.baseUrl.replace(/\/+$/, '')}/images/generations`;
+  const cleanBase = (config.baseUrl || 'https://l0veyou.com').replace(/\/+$/, '');
+  let endpoint = `${cleanBase}/images/generations`;
+
+  const requestId = 'pindou_' + Math.random().toString(36).substring(2, 10) + Date.now().toString(36);
 
   const requestBody = {
-    model: config.model || 'gpt-image-2',
+    model: config.model || 'gpt-image-2-5-flare',
     prompt: prompt,
-    n: Number(config.nCandidates) || 1,
     size: config.imageSize || '1024x1024',
-    quality: config.quality || 'standard',
-    response_format: config.responseFormat || 'url',
   };
 
-  const response = await fetch(endpoint, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${config.apiKey.trim()}`,
-    },
-    body: JSON.stringify(requestBody),
-  });
+  let response;
+  try {
+    response = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${config.apiKey.trim()}`,
+        'X-Request-Id': requestId,
+      },
+      body: JSON.stringify(requestBody),
+    });
+  } catch (netErr) {
+    // 尝试携带 /v1 重试
+    if (!cleanBase.endsWith('/v1')) {
+      try {
+        endpoint = `${cleanBase}/v1/images/generations`;
+        response = await fetch(endpoint, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${config.apiKey.trim()}`,
+            'X-Request-Id': requestId,
+          },
+          body: JSON.stringify(requestBody),
+        });
+      } catch (retryErr) {
+        throw new Error(`网络连接失败: ${netErr.message || '请检查网络或代理连接'}`);
+      }
+    } else {
+      throw new Error(`网络连接失败: ${netErr.message || '请检查网络或代理连接'}`);
+    }
+  }
+
+  // 404 智能 fallback 到 /v1
+  if (response && response.status === 404 && !cleanBase.endsWith('/v1')) {
+    endpoint = `${cleanBase}/v1/images/generations`;
+    try {
+      const retryRes = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${config.apiKey.trim()}`,
+          'X-Request-Id': requestId,
+        },
+        body: JSON.stringify(requestBody),
+      });
+      if (retryRes) response = retryRes;
+    } catch (_) {}
+  }
 
   if (!response.ok) {
     const errorText = await response.text();
     let errorMessage = `AI 生成接口报错 (${response.status})`;
     try {
       const parsed = JSON.parse(errorText);
-      if (parsed.error?.message) errorMessage = parsed.error.message;
+      if (parsed.error?.message) {
+        errorMessage = parsed.error.message;
+        if (errorMessage.includes('Image generation is not enabled for this group')) {
+          errorMessage = '中转服务权限提示：当前 API Key 所在的分组未开启生图通道，请在 l0veyou.com 后台为令牌关联支持画图的通道分组。';
+        }
+      }
     } catch (e) {
       if (errorText) errorMessage += `: ${errorText.slice(0, 100)}`;
     }
@@ -113,17 +159,16 @@ export async function editAiImage({ imageFile, prompt, customConfig = {} }) {
     throw new Error('请先在右上角【设置】中配置您的 AI API Key');
   }
 
-  const endpoint = `${config.baseUrl.replace(/\/+$/, '')}/images/edits`;
+  const cleanBase = (config.baseUrl || 'https://l0veyou.com').replace(/\/+$/, '');
+  let endpoint = `${cleanBase}/images/edits`;
 
   const formData = new FormData();
   formData.append('image', imageFile);
   formData.append('prompt', prompt);
-  formData.append('model', config.model || 'gpt-image-2');
-  formData.append('n', Number(config.nCandidates) || 1);
+  formData.append('model', config.model || 'gpt-image-2-5-flare');
   formData.append('size', config.imageSize || '1024x1024');
-  formData.append('response_format', config.responseFormat || 'url');
 
-  const response = await fetch(endpoint, {
+  let response = await fetch(endpoint, {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${config.apiKey.trim()}`,
@@ -131,12 +176,31 @@ export async function editAiImage({ imageFile, prompt, customConfig = {} }) {
     body: formData,
   });
 
+  if (response.status === 404 && !cleanBase.endsWith('/v1')) {
+    endpoint = `${cleanBase}/v1/images/edits`;
+    try {
+      const retryRes = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${config.apiKey.trim()}`,
+        },
+        body: formData,
+      });
+      if (retryRes) response = retryRes;
+    } catch (_) {}
+  }
+
   if (!response.ok) {
     const errorText = await response.text();
     let errorMessage = `AI 图像编辑接口报错 (${response.status})`;
     try {
       const parsed = JSON.parse(errorText);
-      if (parsed.error?.message) errorMessage = parsed.error.message;
+      if (parsed.error?.message) {
+        errorMessage = parsed.error.message;
+        if (errorMessage.includes('Image generation is not enabled for this group')) {
+          errorMessage = '中转服务权限提示：当前 API Key 所在的分组未开启生图通道，请在 l0veyou.com 后台为令牌关联支持画图的通道分组。';
+        }
+      }
     } catch (e) {
       if (errorText) errorMessage += `: ${errorText.slice(0, 100)}`;
     }
