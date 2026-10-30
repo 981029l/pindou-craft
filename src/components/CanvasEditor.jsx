@@ -23,7 +23,9 @@ import {
   CheckCircle2,
   ArrowLeftRight
 } from 'lucide-react'; // # 图标资源引用
-import { getPaletteDataByBrand } from '../data/paletteManager'; // # 色卡数据管理器
+import { getPaletteDataByBrand } from '../data/paletteManager';
+import MagneticDock from './ui/MagneticDock';
+import SplitFlapDisplay from './ui/SplitFlapDisplay'; // # 色卡数据管理器
 
 export default function CanvasEditor({ // # 画布编辑器与竞品级用料矩阵工作台
   gridData,
@@ -152,6 +154,94 @@ export default function CanvasEditor({ // # 画布编辑器与竞品级用料矩
     setZoom(safeScale);
     setPan({ x: 0, y: 0 });
   }, [width, height, baseCellSize, rulerOffset]);
+
+  // 底部 macOS 磁吸工具坞项配置 (来自 Componentry 规范)
+  const dockItems = React.useMemo(() => [
+    {
+      id: 'pencil',
+      label: '铅笔画笔 (B)',
+      icon: <Pencil className="w-4 h-4" />,
+      isActive: currentTool === 'pencil',
+      onClick: () => setCurrentTool('pencil'),
+    },
+    {
+      id: 'bucket',
+      label: '油漆桶填色 (G)',
+      icon: <PaintBucket className="w-4 h-4" />,
+      isActive: currentTool === 'bucket',
+      onClick: () => setCurrentTool('bucket'),
+    },
+    {
+      id: 'picker',
+      label: '吸管取色 (I)',
+      icon: <Pipette className="w-4 h-4" />,
+      isActive: currentTool === 'picker',
+      onClick: () => setCurrentTool('picker'),
+    },
+    {
+      id: 'eraser',
+      label: '橡皮擦 (E)',
+      icon: <Eraser className="w-4 h-4" />,
+      isActive: currentTool === 'eraser',
+      onClick: () => setCurrentTool('eraser'),
+    },
+    {
+      id: 'hand',
+      label: '抓手平移 (H/空格)',
+      icon: <Hand className="w-4 h-4" />,
+      isActive: currentTool === 'hand',
+      onClick: () => setCurrentTool('hand'),
+    },
+    { type: 'divider' },
+    {
+      id: 'undo',
+      label: '撤销 (Ctrl+Z)',
+      icon: <Undo2 className="w-4 h-4" />,
+      disabled: !canUndo,
+      onClick: undo,
+    },
+    {
+      id: 'redo',
+      label: '重做 (Ctrl+Y)',
+      icon: <Redo2 className="w-4 h-4" />,
+      disabled: !canRedo,
+      onClick: redo,
+    },
+    { type: 'divider' },
+    {
+      id: 'beadStyle',
+      label: `质感: ${beadStyle === 'gloss' ? '微珠高光' : beadStyle === 'pixel' ? '像素方块' : '经典打孔'}`,
+      icon: <Sparkles className="w-4 h-4" />,
+      isActive: beadStyle === 'gloss',
+      onClick: () => {
+        setBeadStyle(prev => prev === 'gloss' ? 'pixel' : prev === 'pixel' ? 'bead' : 'gloss');
+      },
+    },
+    {
+      id: 'zoomIn',
+      label: '放大画布',
+      icon: <ZoomIn className="w-4 h-4" />,
+      onClick: () => {
+        isUserZoomedRef.current = true;
+        setZoom(prev => Math.min(8.0, Number((prev + 0.3).toFixed(3))));
+      },
+    },
+    {
+      id: 'zoomOut',
+      label: '缩小画布',
+      icon: <ZoomOut className="w-4 h-4" />,
+      onClick: () => {
+        isUserZoomedRef.current = true;
+        setZoom(prev => Math.max(0.02, Number((prev - 0.3).toFixed(3))));
+      },
+    },
+    {
+      id: 'fit',
+      label: '居中铺满 (F)',
+      icon: <Shrink className="w-4 h-4" />,
+      onClick: fitToViewport,
+    },
+  ], [currentTool, canUndo, canRedo, undo, redo, beadStyle, fitToViewport]);
 
   // 仅在图纸尺寸发生改变时执行初始铺满
   useEffect(() => {
@@ -967,8 +1057,13 @@ export default function CanvasEditor({ // # 画布编辑器与竞品级用料矩
           </div>
         )}
 
+        {/* Componentry 风格 macOS 弹簧物理磁吸悬浮工具坞 (居中悬浮于画布视口底部) */}
+        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-30 pointer-events-auto max-w-[95vw] overflow-x-auto no-scrollbar scale-90 sm:scale-100 origin-bottom">
+          <MagneticDock items={dockItems} baseSize={36} />
+        </div>
+
         {/* 画布右下角悬浮快捷放大控制器与高倍微距档位 */}
-        <div className="absolute bottom-3 right-3 z-30 flex items-center gap-1 bg-white/90 backdrop-blur-md px-2 py-1 rounded-xl shadow-lg border border-stone-200/90 text-xs">
+        <div className="hidden xl:flex absolute bottom-3 right-3 z-30 items-center gap-1 bg-white/90 backdrop-blur-md px-2 py-1 rounded-xl shadow-lg border border-stone-200/90 text-xs">
           {/* 滚轮缩放专属开关按钮 */}
           <button
             type="button"
@@ -1087,49 +1182,81 @@ export default function CanvasEditor({ // # 画布编辑器与竞品级用料矩
 
       {/* 底部拼小豆竞品同款: 详细用料胶囊卡片矩阵 */}
       <div className="bg-white border-t border-stone-200 p-2.5 sm:p-3 shrink-0 select-none">
-        {/* 统计标头 */}
-        <div className="flex flex-wrap items-center justify-between gap-2 mb-2 pb-1.5 border-b border-stone-100 text-xs">
-          <div className="flex items-center gap-2 text-stone-800 font-bold">
-            <span className="text-stone-900 font-display">PinDou</span>
-            <span className="text-stone-300">|</span>
-            <span className="text-stone-700">{paletteBrand}</span>
-            <span className="text-stone-300">|</span>
-            <span className="text-stone-500 font-mono">{width}×{height}格</span>
-            <span className="text-stone-300">|</span>
-            <span className="text-amber-700 font-bold">
-              总计 {colorStats.list.length} 色 / {colorStats.total} 粒
-            </span>
-            {completedColors.size > 0 && (
-              <>
-                <span className="text-stone-300">|</span>
-                <span className="text-emerald-700 font-bold flex items-center gap-1">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                  <span>已拼完: {completedColors.size}/{colorStats.list.length} 色</span>
-                </span>
-              </>
-            )}
+        {/* Supahero 风格 Bento Grid 微仪表板与 Componentry 机械翻牌屏 */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 mb-2.5">
+          {/* Bento 卡片 1: 总豆数 (带 SplitFlap 翻牌器) */}
+          <div className="flex items-center justify-between p-2 rounded-xl bg-stone-950 border border-stone-800 text-white shadow-xs">
+            <div className="min-w-0 pr-1.5">
+              <div className="flex items-center gap-1.5 text-[10px] sm:text-[11px] text-stone-400 font-medium">
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse shrink-0" />
+                <span className="truncate">总耗材豆量</span>
+              </div>
+              <div className="text-[10px] text-stone-500 font-mono mt-0.5 truncate">
+                {paletteBrand} · {width}×{height}格
+              </div>
+            </div>
+            <SplitFlapDisplay
+              value={colorStats.total}
+              minLength={4}
+              accentColor="#f59e0b"
+            />
           </div>
 
-          {/* 快捷操作: 清除高亮 / 提示 */}
-          <div className="flex items-center gap-2">
-            {highlightColorCode ? (
-              <button
-                type="button"
-                onClick={() => onToggleHighlightColorCode && onToggleHighlightColorCode(null)}
-                className="flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-500 hover:bg-amber-600 text-white text-[11px] font-bold shadow-xs transition-colors"
-                title="点击恢复显示全部颜色"
-              >
-                <span>已高亮 [{highlightColorCode}] 点击还原</span>
-              </button>
-            ) : (
-              <span className="flex items-center gap-1 text-[11px] text-stone-600 hidden sm:inline-flex">
-                <Lightbulb className="w-3.5 h-3.5 text-amber-500 shrink-0" />
-                <span>点击色卡一键高亮，右侧打勾记录进度</span>
-              </span>
-            )}
+          {/* Bento 卡片 2: 颜色总数 (带 SplitFlap 翻牌器) */}
+          <div className="flex items-center justify-between p-2 rounded-xl bg-stone-950 border border-stone-800 text-white shadow-xs">
+            <div className="min-w-0 pr-1.5">
+              <div className="flex items-center gap-1.5 text-[10px] sm:text-[11px] text-stone-400 font-medium">
+                <span className="w-1.5 h-1.5 rounded-full bg-sky-400 animate-pulse shrink-0" />
+                <span className="truncate">用料色种数</span>
+              </div>
+              <div className="text-[10px] text-stone-500 font-mono mt-0.5 truncate">
+                国际标准色谱
+              </div>
+            </div>
+            <SplitFlapDisplay
+              value={colorStats.list.length}
+              minLength={2}
+              accentColor="#38bdf8"
+            />
+          </div>
 
-            {/* 当前画笔快捷换色按钮与气泡弹窗 */}
-            <div className="relative">
+          {/* Bento 卡片 3: 拼装打卡完成度 (带 SplitFlap 翻牌器) */}
+          <div className="flex items-center justify-between p-2 rounded-xl bg-stone-950 border border-stone-800 text-white shadow-xs">
+            <div className="min-w-0 pr-1.5">
+              <div className="flex items-center gap-1.5 text-[10px] sm:text-[11px] text-stone-400 font-medium">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping shrink-0" />
+                <span className="truncate">已完成色号</span>
+              </div>
+              <div className="text-[10px] text-emerald-400 font-mono mt-0.5 truncate font-bold">
+                {colorStats.list.length > 0 ? `${Math.round((completedColors.size / colorStats.list.length) * 100)}% 完成` : '就绪'}
+              </div>
+            </div>
+            <SplitFlapDisplay
+              value={completedColors.size}
+              minLength={2}
+              accentColor="#10b981"
+            />
+          </div>
+
+          {/* Bento 卡片 4: 激活画笔与快捷换色 */}
+          <div className="relative flex flex-col justify-between p-2 rounded-xl bg-stone-100/90 border border-stone-200/90 shadow-2xs">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] sm:text-[11px] font-bold text-stone-700 flex items-center gap-1">
+                <Palette className="w-3 h-3 text-stone-500" />
+                <span>激活画笔</span>
+              </span>
+              {highlightColorCode ? (
+                <button
+                  type="button"
+                  onClick={() => onToggleHighlightColorCode && onToggleHighlightColorCode(null)}
+                  className="text-[10px] font-bold text-amber-700 hover:text-amber-800 underline"
+                >
+                  取消高亮
+                </button>
+              ) : (
+                <span className="text-[10px] text-stone-400">点击色卡高亮</span>
+              )}
+            </div>
               <button
                 type="button"
                 onClick={() => setShowQuickPalette(prev => !prev)}
@@ -1290,6 +1417,27 @@ export default function CanvasEditor({ // # 画布编辑器与竞品级用料矩
               )}
             </div>
           </div>
+
+        {/* 用料清单与实体打卡胶囊标头 */}
+        <div className="flex items-center justify-between gap-2 mb-2 pb-1 border-b border-stone-100 text-xs">
+          <div className="flex items-center gap-1.5 text-stone-800 font-bold">
+            <span className="font-display">物料清单 (BOM)</span>
+            <span className="text-stone-300">·</span>
+            <span className="text-[11px] font-normal text-stone-500">点击色卡一键高亮定位，右侧勾选即时同步物理打卡</span>
+          </div>
+          {highlightColorCode ? (
+            <button
+              type="button"
+              onClick={() => onToggleHighlightColorCode && onToggleHighlightColorCode(null)}
+              className="flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-500 hover:bg-amber-600 text-white text-[11px] font-bold shadow-xs transition-colors"
+            >
+              已高亮 [{highlightColorCode}] 点击还原
+            </button>
+          ) : (
+            <span className="text-[11px] text-stone-400 hidden sm:inline">
+              共计 {colorStats.list.length} 色 · 点击胶囊右侧圆圈标记已拼完
+            </span>
+          )}
         </div>
 
         {/* 双拼用料胶囊列表 (支持拼装进度打勾) */}
