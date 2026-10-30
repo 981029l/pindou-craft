@@ -1034,30 +1034,30 @@ export default function CanvasEditor({ // # 画布编辑器与竞品级用料矩
                 <span className="text-[10px] opacity-80 font-sans">▾</span>
               </button>
 
-              {/* 快捷选色浮窗 (100% 纯白实体不透底，全端配备多重醒目关闭通道) */}
+              {/* 快捷选色浮窗 (居中弹窗，宽度饱满 380px，支持搜索与全量色号网格) */}
               {showQuickPalette && (
                 <>
-                  {/* 背景点击收起遮罩 (移动端深色磨砂，PC 端透明点击捕获) */}
+                  {/* 背景点击收起遮罩 */}
                   <div
                     onClick={() => setShowQuickPalette(false)}
-                    className="fixed inset-0 z-50 bg-stone-950/45 backdrop-blur-2xs transition-opacity sm:bg-transparent"
+                    className="fixed inset-0 z-40 bg-stone-900/25 backdrop-blur-2xs transition-opacity"
                   />
 
-                  {/* 调色盘主体容器 (100% 纯白实体不透底) */}
+                  {/* 调色盘主体容器 (饱满 380px 宽度，底部居中浮动，彻底解决过窄挤压与文字折行) */}
                   <div
-                    className="fixed inset-x-0 bottom-0 z-50 rounded-t-3xl sm:rounded-2xl max-h-[80vh] sm:max-h-[460px] w-full sm:w-88 sm:max-w-none bg-white shadow-2xl border-t sm:border border-stone-200 p-4 sm:p-3 sm:absolute sm:inset-x-auto sm:bottom-full sm:right-0 sm:mb-2 select-none flex flex-col animate-studio-in"
+                    className="fixed z-50 left-1/2 bottom-16 -translate-x-1/2 w-[380px] max-w-[94vw] max-h-[82vh] sm:max-h-[490px] bg-white rounded-2xl shadow-2xl border border-stone-200/90 p-3.5 select-none flex flex-col animate-studio-in"
                   >
                     {/* 标头与醒目关闭按钮 */}
                     <div className="flex items-center justify-between gap-2 mb-2 pb-2 border-b border-stone-100 shrink-0">
-                      <div className="flex items-center gap-1.5 text-xs font-bold text-stone-900">
-                        <Palette className="w-4 h-4 text-amber-500 shrink-0" />
+                      <div className="flex items-center gap-1.5 text-xs font-bold text-stone-900 whitespace-nowrap">
+                        <Palette className="w-4 h-4 text-rose-600 shrink-0" />
                         <span>快捷调色盘 ({paletteBrand})</span>
                         <span className="text-[10px] text-stone-400 font-normal">共 {activeBrandColorList?.length || 0} 色</span>
                       </div>
                       <button
                         type="button"
                         onClick={() => setShowQuickPalette(false)}
-                        className="p-1.5 rounded-full hover:bg-stone-100 text-stone-400 hover:text-stone-700 transition-colors"
+                        className="p-1 rounded-full hover:bg-stone-100 text-stone-400 hover:text-stone-700 transition-colors shrink-0"
                         title="关闭调色盘"
                       >
                         <X className="w-4 h-4" />
@@ -1067,12 +1067,12 @@ export default function CanvasEditor({ // # 画布编辑器与竞品级用料矩
                     {/* 1. 优先置顶: 本图正在使用的颜色 */}
                     {colorStats.list.length > 0 && !quickPaletteSearch && (
                       <div className="mb-2 pb-2 border-b border-stone-100 shrink-0">
-                        <div className="text-[10px] font-bold text-amber-700 mb-1.5 flex items-center justify-between">
-                          <span className="flex items-center gap-1">
-                            <Pin className="w-3 h-3 text-amber-600 shrink-0" />
+                        <div className="text-[10px] font-bold text-stone-700 mb-1.5 flex items-center justify-between whitespace-nowrap">
+                          <span className="flex items-center gap-1 text-rose-600 font-bold">
+                            <Pin className="w-3 h-3 shrink-0" />
                             <span>本图已用色 ({colorStats.list.length} 色)</span>
                           </span>
-                          <span className="text-[9px] text-stone-400 font-normal">点击即切</span>
+                          <span className="text-[9px] text-stone-400 font-normal">点击即切画笔</span>
                         </div>
                         <div className="flex flex-wrap gap-1 max-h-24 sm:max-h-20 overflow-y-auto custom-scrollbar pr-0.5">
                           {colorStats.list.map((item) => {
@@ -1085,10 +1085,10 @@ export default function CanvasEditor({ // # 画布编辑器与竞品级用料矩
                                   onSelectColorCode(item.code);
                                   setShowQuickPalette(false);
                                 }}
-                                className={`flex items-center gap-1 px-2 py-1 sm:px-1.5 sm:py-0.5 rounded border text-[11px] sm:text-[10px] font-mono font-bold transition-all active:scale-95 ${
+                                className={`flex items-center gap-1 px-2 py-1 sm:px-1.5 sm:py-0.5 rounded border text-[11px] sm:text-[10px] font-mono font-bold transition-all active:scale-95 shrink-0 whitespace-nowrap ${
                                   isSelected
-                                    ? 'ring-2 ring-amber-500 border-amber-500 bg-amber-50 shadow-xs'
-                                    : 'border-stone-200 hover:border-stone-400 bg-white hover:bg-stone-50'
+                                    ? 'ring-2 ring-rose-500 border-rose-500 bg-rose-50 text-rose-700 shadow-xs'
+                                    : 'border-stone-200 hover:border-stone-400 bg-white hover:bg-stone-50 text-stone-800'
                                 }`}
                                 title={`${item.code} ${item.name_zh} · 用量 ${item.count} 颗`}
                               >
@@ -1096,7 +1096,7 @@ export default function CanvasEditor({ // # 画布编辑器与竞品级用料矩
                                   className="w-3 h-3 sm:w-2.5 sm:h-2.5 rounded-xs border border-black/15 shrink-0"
                                   style={{ backgroundColor: item.hex }}
                                 />
-                                <span className="text-stone-800">{item.code}</span>
+                                <span className="font-mono">{item.code}</span>
                               </button>
                             );
                           })}
@@ -1108,16 +1108,15 @@ export default function CanvasEditor({ // # 画布编辑器与竞品级用料矩
                     <div className="mb-2 shrink-0">
                       <input
                         type="text"
-                        placeholder="搜索全部色号或名称 (如 H07 / 蓝 / 黑)..."
+                        placeholder="搜索全部色号或名称 (如 H7 / 纯黑 / 蓝)..."
                         value={quickPaletteSearch}
                         onChange={(e) => setQuickPaletteSearch(e.target.value)}
-                        className="w-full px-3 py-2 sm:px-2.5 sm:py-1.5 bg-stone-50 rounded-xl text-xs border border-stone-200 focus:border-amber-400 focus:bg-white focus:outline-hidden transition-all placeholder:text-stone-400 font-sans shadow-2xs"
-                        autoFocus
+                        className="w-full px-3 py-1.5 bg-stone-50 rounded-xl text-xs border border-stone-200 focus:border-rose-500 focus:bg-white focus:outline-none transition-all placeholder:text-stone-400 font-sans shadow-2xs"
                       />
                     </div>
 
                     {/* 3. 全量色号网格 */}
-                    <div className="text-[10px] font-bold text-stone-500 mb-1 flex items-center justify-between shrink-0">
+                    <div className="text-[10px] font-bold text-stone-500 mb-1.5 flex items-center justify-between shrink-0 whitespace-nowrap">
                       <span className="flex items-center gap-1">
                         <Palette className="w-3.5 h-3.5 text-stone-400 shrink-0" />
                         <span>全部品牌色库 ({filteredQuickPaletteColors.length} 色)</span>
@@ -1126,14 +1125,14 @@ export default function CanvasEditor({ // # 画布编辑器与竞品级用料矩
                         <button
                           type="button"
                           onClick={() => setQuickPaletteSearch('')}
-                          className="text-amber-600 hover:underline"
+                          className="text-rose-600 hover:underline"
                         >
                           清空搜索
                         </button>
                       )}
                     </div>
 
-                    <div className="grid grid-cols-5 sm:grid-cols-6 gap-1.5 sm:gap-1 overflow-y-auto custom-scrollbar p-0.5 flex-1 min-h-40 sm:min-h-36">
+                    <div className="grid grid-cols-6 gap-1.5 overflow-y-auto custom-scrollbar p-1 flex-1 min-h-[160px] max-h-[250px]">
                       {filteredQuickPaletteColors.map((c) => {
                         const isSelected = selectedColorCode === c.code;
                         const contrastColor = getContrastTextColor(c.hex);
@@ -1145,20 +1144,20 @@ export default function CanvasEditor({ // # 画布编辑器与竞品级用料矩
                               onSelectColorCode(c.code);
                               setShowQuickPalette(false);
                             }}
-                            className={`group flex flex-col items-center p-1.5 sm:p-1 rounded-xl sm:rounded-lg border transition-all active:scale-90 ${
+                            className={`group flex flex-col items-center p-1.5 rounded-xl border transition-all active:scale-95 ${
                               isSelected
-                                ? 'ring-2 ring-amber-500 border-amber-500 shadow-sm bg-amber-50/50'
+                                ? 'ring-2 ring-rose-500 border-rose-500 shadow-sm bg-rose-50/50'
                                 : 'border-stone-200 hover:border-stone-400 bg-white hover:bg-stone-50'
                             }`}
                             title={`${c.code} - ${c.name_zh || ''}`}
                           >
                             <div
-                              className="w-7 h-7 sm:w-6 sm:h-6 rounded-lg sm:rounded-md shadow-2xs border border-black/10 flex items-center justify-center font-mono font-bold text-[9px]"
+                              className="w-7 h-7 sm:w-6 sm:h-6 rounded-lg shadow-2xs border border-black/10 flex items-center justify-center font-mono font-bold text-[9px] shrink-0"
                               style={{ backgroundColor: c.hex, color: contrastColor }}
                             >
                               {isSelected && <Check className="w-3.5 h-3.5 stroke-[3]" />}
                             </div>
-                            <span className="text-[11px] sm:text-[10px] font-mono font-bold text-stone-700 mt-1 sm:mt-0.5 truncate w-full text-center">
+                            <span className="text-[10px] font-mono font-bold text-stone-700 mt-1 truncate w-full text-center whitespace-nowrap">
                               {c.code}
                             </span>
                           </button>
@@ -1166,12 +1165,12 @@ export default function CanvasEditor({ // # 画布编辑器与竞品级用料矩
                       })}
                     </div>
 
-                    {/* 4. 移动端底部常驻完成返回大按钮 */}
-                    <div className="pt-2.5 mt-2 border-t border-stone-100 sm:hidden shrink-0">
+                    {/* 4. 移动端完成返回大按钮 */}
+                    <div className="pt-2 mt-2 border-t border-stone-100 sm:hidden shrink-0">
                       <button
                         type="button"
                         onClick={() => setShowQuickPalette(false)}
-                        className="w-full py-2.5 rounded-xl bg-stone-900 hover:bg-stone-800 active:scale-98 text-white font-bold text-xs shadow-md transition-all flex items-center justify-center gap-1.5"
+                        className="w-full py-2 rounded-xl bg-stone-900 hover:bg-stone-800 active:scale-98 text-white font-bold text-xs shadow-md transition-all flex items-center justify-center gap-1.5"
                       >
                         <Check className="w-3.5 h-3.5" />
                         <span>选定并返回图纸</span>
