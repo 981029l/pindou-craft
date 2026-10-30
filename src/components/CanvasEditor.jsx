@@ -12,10 +12,16 @@ import {
   Maximize2, 
   Circle, 
   Square, 
-  Shrink,
-  Sparkles,
-  Palette,
-  X
+  Shrink, 
+  Sparkles, 
+  Palette, 
+  X,
+  Crosshair,
+  Lightbulb,
+  Pin,
+  Check,
+  CheckCircle2,
+  ArrowLeftRight
 } from 'lucide-react'; // # 图标资源引用
 import { getPaletteDataByBrand } from '../data/paletteManager'; // # 色卡数据管理器
 
@@ -56,6 +62,20 @@ export default function CanvasEditor({ // # 画布编辑器与竞品级用料矩
 
   const [curtainPos, setCurtainPos] = useState(50);
   const [isDraggingCurtain, setIsDraggingCurtain] = useState(false);
+  const [completedColors, setCompletedColors] = useState(() => new Set()); // # 实体拼装打勾进度
+
+  const toggleColorCompleted = useCallback((code, e) => {
+    if (e) e.stopPropagation();
+    setCompletedColors(prev => {
+      const next = new Set(prev);
+      if (next.has(code)) {
+        next.delete(code);
+      } else {
+        next.add(code);
+      }
+      return next;
+    });
+  }, []);
 
   const height = gridData?.length || 0;
   const width = gridData?.[0]?.length || 0;
@@ -246,12 +266,12 @@ export default function CanvasEditor({ // # 画布编辑器与竞品级用料矩
           ctx.fillStyle = '#cbd5e1';
           ctx.fill();
         } 
-        // 模式 1: 🔲 平面像素方块
+        // 模式 1: 平面像素方块
         else if (beadStyle === 'pixel') {
           ctx.fillStyle = hex;
           ctx.fillRect(posX, posY, cellSize, cellSize);
         } 
-        // 模式 2: ✨ 实心高光艺术微珠 (默认推荐，无孔洞灰雾，纯正色彩)
+        // 模式 2: 实心高光艺术微珠 (默认推荐，无孔洞灰雾，纯正色彩)
         else if (beadStyle === 'gloss') {
           ctx.fillStyle = '#ffffff';
           ctx.fillRect(posX, posY, cellSize, cellSize);
@@ -933,7 +953,10 @@ export default function CanvasEditor({ // # 画布编辑器与竞品级用料矩
         {/* 悬浮实时格点坐标与色号信息探针 (跟随或吸附左上角) */}
         {hoveredCell && (
           <div className="absolute top-3 left-3 z-30 bg-stone-900/90 backdrop-blur-md text-white px-2.5 py-1.5 rounded-xl text-xs font-mono flex items-center gap-2 shadow-xl pointer-events-none border border-white/15 animate-studio-in">
-            <span className="text-amber-400 font-bold">📍 ({hoveredCell.x}, {hoveredCell.y})</span>
+            <span className="text-amber-400 font-bold flex items-center gap-1">
+              <Crosshair className="w-3.5 h-3.5" />
+              <span>({hoveredCell.x}, {hoveredCell.y})</span>
+            </span>
             <span className="text-stone-500">|</span>
             <span
               className="w-3.5 h-3.5 rounded border border-white/40 shadow-xs shrink-0"
@@ -1055,7 +1078,7 @@ export default function CanvasEditor({ // # 画布编辑器与竞品级用料矩
             >
               <div className="w-0.5 h-full bg-amber-500 shadow-md group-hover:w-1 transition-all" />
               <div className="absolute w-7 h-7 rounded-full bg-amber-500 text-white flex items-center justify-center text-xs font-bold shadow-lg ring-2 ring-white group-hover:scale-110 transition-transform">
-                ⇔
+                <ArrowLeftRight className="w-3.5 h-3.5" />
               </div>
             </div>
           )}
@@ -1076,6 +1099,15 @@ export default function CanvasEditor({ // # 画布编辑器与竞品级用料矩
             <span className="text-amber-700 font-bold">
               总计 {colorStats.list.length} 色 / {colorStats.total} 粒
             </span>
+            {completedColors.size > 0 && (
+              <>
+                <span className="text-stone-300">|</span>
+                <span className="text-emerald-700 font-bold flex items-center gap-1">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                  <span>已拼完: {completedColors.size}/{colorStats.list.length} 色</span>
+                </span>
+              </>
+            )}
           </div>
 
           {/* 快捷操作: 清除高亮 / 提示 */}
@@ -1090,8 +1122,9 @@ export default function CanvasEditor({ // # 画布编辑器与竞品级用料矩
                 <span>已高亮 [{highlightColorCode}] 点击还原</span>
               </button>
             ) : (
-              <span className="text-[11px] text-stone-600 hidden sm:inline">
-                💡 点击下方任意色卡，画布一键高亮找色
+              <span className="flex items-center gap-1 text-[11px] text-stone-600 hidden sm:inline-flex">
+                <Lightbulb className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                <span>点击色卡一键高亮，右侧打勾记录进度</span>
               </span>
             )}
 
@@ -1143,7 +1176,10 @@ export default function CanvasEditor({ // # 画布编辑器与竞品级用料矩
                     {colorStats.list.length > 0 && !quickPaletteSearch && (
                       <div className="mb-2 pb-2 border-b border-stone-100 shrink-0">
                         <div className="text-[10px] font-bold text-amber-700 mb-1.5 flex items-center justify-between">
-                          <span>📌 本图已用色 ({colorStats.list.length} 色)</span>
+                          <span className="flex items-center gap-1">
+                            <Pin className="w-3 h-3 text-amber-600 shrink-0" />
+                            <span>本图已用色 ({colorStats.list.length} 色)</span>
+                          </span>
                           <span className="text-[9px] text-stone-400 font-normal">点击即切</span>
                         </div>
                         <div className="flex flex-wrap gap-1 max-h-24 sm:max-h-20 overflow-y-auto custom-scrollbar pr-0.5">
@@ -1190,7 +1226,10 @@ export default function CanvasEditor({ // # 画布编辑器与竞品级用料矩
 
                     {/* 3. 全量色号网格 */}
                     <div className="text-[10px] font-bold text-stone-500 mb-1 flex items-center justify-between shrink-0">
-                      <span>🎨 全部品牌色库 ({filteredQuickPaletteColors.length} 色)</span>
+                      <span className="flex items-center gap-1">
+                        <Palette className="w-3.5 h-3.5 text-stone-400 shrink-0" />
+                        <span>全部品牌色库 ({filteredQuickPaletteColors.length} 色)</span>
+                      </span>
                       {quickPaletteSearch && (
                         <button
                           type="button"
@@ -1225,7 +1264,7 @@ export default function CanvasEditor({ // # 画布编辑器与竞品级用料矩
                               className="w-7 h-7 sm:w-6 sm:h-6 rounded-lg sm:rounded-md shadow-2xs border border-black/10 flex items-center justify-center font-mono font-bold text-[9px]"
                               style={{ backgroundColor: c.hex, color: contrastColor }}
                             >
-                              {isSelected ? '✓' : ''}
+                              {isSelected && <Check className="w-3.5 h-3.5 stroke-[3]" />}
                             </div>
                             <span className="text-[11px] sm:text-[10px] font-mono font-bold text-stone-700 mt-1 sm:mt-0.5 truncate w-full text-center">
                               {c.code}
@@ -1242,7 +1281,8 @@ export default function CanvasEditor({ // # 画布编辑器与竞品级用料矩
                         onClick={() => setShowQuickPalette(false)}
                         className="w-full py-2.5 rounded-xl bg-stone-900 hover:bg-stone-800 active:scale-98 text-white font-bold text-xs shadow-md transition-all flex items-center justify-center gap-1.5"
                       >
-                        <span>✔ 选定并返回图纸</span>
+                        <Check className="w-3.5 h-3.5" />
+                        <span>选定并返回图纸</span>
                       </button>
                     </div>
                   </div>
@@ -1252,42 +1292,63 @@ export default function CanvasEditor({ // # 画布编辑器与竞品级用料矩
           </div>
         </div>
 
-        {/* 双拼用料胶囊列表 (竞品 1:1 双色拼接卡片矩阵) */}
+        {/* 双拼用料胶囊列表 (支持拼装进度打勾) */}
         <div className="flex flex-wrap gap-1.5 max-h-[110px] sm:max-h-[145px] overflow-y-auto custom-scrollbar pr-1">
           {colorStats.list.map((item) => {
             const isHighlighted = highlightColorCode === item.code;
             const contrastText = getContrastTextColor(item.hex);
+            const isCompleted = completedColors.has(item.code);
 
             return (
-              <button
+              <div
                 key={item.code}
-                type="button"
-                onClick={() => {
-                  if (onToggleHighlightColorCode) {
-                    onToggleHighlightColorCode(item.code);
-                  }
-                  onSelectColorCode(item.code);
-                }}
-                className={`group inline-flex items-stretch rounded border text-xs overflow-hidden transition-all active:scale-95 shadow-2xs ${
+                className={`relative group inline-flex items-stretch rounded border text-xs overflow-hidden transition-all shadow-2xs select-none ${
+                  isCompleted ? 'opacity-55 border-stone-200' : ''
+                } ${
                   isHighlighted
                     ? 'ring-2 ring-amber-500 border-amber-500 shadow-sm scale-105 z-10'
                     : 'border-stone-300 hover:border-stone-400 bg-white'
                 }`}
-                title={`点击在画布中高亮显示 [${item.code} ${item.name_zh}] · 用量 ${item.count} 颗 (${item.pct}%)`}
               >
-                {/* 左侧色块 + 色号 (高对比度) */}
-                <div
-                  className="px-2 py-0.5 sm:py-1 font-mono font-bold text-[11px] flex items-center justify-center min-w-[38px]"
-                  style={{ backgroundColor: item.hex, color: contrastText }}
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (onToggleHighlightColorCode) {
+                      onToggleHighlightColorCode(item.code);
+                    }
+                    onSelectColorCode(item.code);
+                  }}
+                  className="inline-flex items-stretch active:scale-95 transition-transform"
+                  title={`点击在画布中高亮显示 [${item.code} ${item.name_zh}] · 用量 ${item.count} 颗 (${item.pct}%)\n点击右侧小对勾可标记拼装进度`}
                 >
-                  {item.code}
-                </div>
+                  {/* 左侧色块 + 色号 (高对比度) */}
+                  <div
+                    className="px-2 py-0.5 sm:py-1 font-mono font-bold text-[11px] flex items-center justify-center min-w-[38px]"
+                    style={{ backgroundColor: item.hex, color: contrastText }}
+                  >
+                    {isCompleted ? <span className="line-through opacity-80">{item.code}</span> : item.code}
+                  </div>
 
-                {/* 右侧白底精确用量颗数 */}
-                <div className="px-2 py-0.5 sm:py-1 bg-white font-mono font-bold text-stone-900 text-[11px] flex items-center justify-center border-l border-stone-200 group-hover:bg-stone-50 min-w-[34px]">
-                  {item.count}
-                </div>
-              </button>
+                  {/* 右侧白底精确用量颗数 */}
+                  <div className="px-1.5 py-0.5 sm:py-1 bg-white font-mono font-bold text-stone-900 text-[11px] flex items-center justify-center border-l border-stone-200 group-hover:bg-stone-50 min-w-[32px]">
+                    {item.count}
+                  </div>
+                </button>
+
+                {/* 拼装进度打勾标记按键 */}
+                <button
+                  type="button"
+                  onClick={(e) => toggleColorCompleted(item.code, e)}
+                  className={`px-1 py-0.5 border-l border-stone-200 flex items-center justify-center transition-colors ${
+                    isCompleted
+                      ? 'bg-emerald-500 text-white'
+                      : 'bg-stone-50 text-stone-300 hover:text-emerald-600 hover:bg-emerald-50'
+                  }`}
+                  title={isCompleted ? '已拼完此色（点击取消完成标记）' : '标记此色已拼装完成'}
+                >
+                  <Check className={`w-3 h-3 ${isCompleted ? 'stroke-[3]' : 'stroke-[2]'}`} />
+                </button>
+              </div>
             );
           })}
         </div>

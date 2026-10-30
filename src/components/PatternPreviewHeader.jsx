@@ -78,7 +78,7 @@ export default function PatternPreviewHeader({ // # 图纸预览控制头部组�
         {/* 下载 PNG */}
         <button
           onClick={onDownloadPng}
-          className="flex items-center justify-center gap-1 py-1.5 px-2 sm:px-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-medium shadow-xs transition-colors text-xs"
+          className="flex items-center justify-center gap-1.5 py-1.5 px-2.5 sm:px-3 rounded-xl bg-stone-900 hover:bg-stone-800 text-white font-medium shadow-2xs transition-colors text-xs"
         >
           <Download className="w-3.5 h-3.5 shrink-0" />
           <span className="truncate">下载 PNG</span>
@@ -87,7 +87,7 @@ export default function PatternPreviewHeader({ // # 图纸预览控制头部组�
         {/* 导出 BOM */}
         <button
           onClick={onExportBom}
-          className="flex items-center justify-center gap-1 py-1.5 px-2 sm:px-3 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-medium shadow-xs transition-colors text-xs"
+          className="flex items-center justify-center gap-1.5 py-1.5 px-2.5 sm:px-3 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-medium shadow-2xs transition-colors text-xs"
         >
           <Cloud className="w-3.5 h-3.5 shrink-0" />
           <span className="truncate">导出物料</span>

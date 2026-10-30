@@ -32,8 +32,9 @@ export default function CustomDropdown({
         onClick={() => setIsOpen(!isOpen)}
         className={`w-full flex items-center justify-between gap-2 px-3 py-2 rounded-xl bg-white hover:bg-stone-50 border border-stone-200 text-stone-900 text-xs font-medium transition-all shadow-xs focus:outline-none focus:border-stone-900 ${buttonClassName}`}
       >
-        <span className="truncate flex items-center gap-1.5">
-          {selectedOption ? selectedOption.label : placeholder}
+        <span className="truncate flex items-center gap-2">
+          {selectedOption?.icon && <selectedOption.icon className="w-3.5 h-3.5 shrink-0 text-amber-600" />}
+          <span>{selectedOption ? selectedOption.label : placeholder}</span>
         </span>
         <ChevronDown
           className={`w-3.5 h-3.5 text-stone-500 transition-transform duration-200 shrink-0 ${
@@ -61,7 +62,10 @@ export default function CustomDropdown({
                     : 'text-stone-700 hover:bg-stone-50 hover:text-stone-900'
                 }`}
               >
-                <span className="truncate">{option.label}</span>
+                <span className="truncate flex items-center gap-2">
+                  {option.icon && <option.icon className="w-3.5 h-3.5 shrink-0 text-stone-500" />}
+                  <span>{option.label}</span>
+                </span>
                 {isSelected && <Check className="w-3.5 h-3.5 text-stone-900 shrink-0 ml-2" />}
               </button>
             );

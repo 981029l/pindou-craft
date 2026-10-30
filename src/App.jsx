@@ -99,6 +99,16 @@ export default function App() {
     recomputeGrid(newSrc, gridWidth, gridHeight, brightness, contrast, saturation, enableColorLimit, maxColors, paletteBrand, true);
   };
 
+  const handleSelectPreset = (preset) => { // # 快捷预设载入
+    setPatternName(`拼豆图纸 - ${preset.name}`);
+    setGridWidth(preset.width);
+    setGridHeight(preset.height);
+    setGridData(preset.grid);
+    setHistory([preset.grid]);
+    setHistoryIndex(0);
+    setActiveMobileTab('canvas');
+  };
+
   const handleAutoDetectDensity = () => {
     recomputeGrid(currentImageSrc, gridWidth, gridHeight, brightness, contrast, saturation, enableColorLimit, maxColors, paletteBrand, true);
   };
@@ -274,6 +284,7 @@ export default function App() {
             onOpenSettings={() => setIsSettingsOpen(true)}
             hasApiKey={hasApiKey}
             gridSize={gridWidth}
+            onSelectPreset={handleSelectPreset}
           />
 
           <ParameterSettingsCard

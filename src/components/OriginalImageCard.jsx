@@ -1,8 +1,30 @@
 import React, { useState } from 'react';
-import { Upload, Sparkles, Image as ImageIcon, RefreshCw, Wand2, Loader2, Play, CheckCircle2, AlertCircle, Zap, Check } from 'lucide-react';
+import { 
+  Upload, 
+  Sparkles, 
+  Image as ImageIcon, 
+  RefreshCw, 
+  Loader2, 
+  CheckCircle2, 
+  AlertCircle, 
+  Zap, 
+  Check,
+  Camera,
+  Crown,
+  LayoutGrid,
+  Gamepad2,
+  ChevronDown,
+  ChevronUp,
+  Settings,
+  Heart,
+  Flame,
+  Smile
+} from 'lucide-react';
 import GlassCard from './GlassCard';
 import CustomDropdown from './CustomDropdown';
-import { buildPixelArtPrompt, generateAiImage, editAiImage, dataUrlToFile } from '../core/aiService';
+import { buildPixelArtPrompt, editAiImage, dataUrlToFile } from '../core/aiService';
+import { PRESET_GALLERY } from '../data/samplePresets';
+import defaultSampleImg from '../assets/default_sample.webp';
 
 // 将任意图片源安全转为 File 对象
 async function ensureImageFile(url, filename = 'input.png') {
@@ -20,22 +42,25 @@ export default function OriginalImageCard({
   onOpenSettings,
   hasApiKey,
   gridSize = 140,
+  onSelectPreset,
 }) {
   const [aiPrompt, setAiPrompt] = useState('');
   const [aiStyle, setAiStyle] = useState('original_remaster');
   const [isAiGenerating, setIsAiGenerating] = useState(false);
   const [statusMessage, setStatusMessage] = useState(null);
+  const [isAiDrawerOpen, setIsAiDrawerOpen] = useState(false); // AI 面板默认可折叠收起，保持极简专注
 
   // AI 多候选图结果列表与当前选中索引
   const [aiCandidates, setAiCandidates] = useState([]);
   const [selectedCandidateIdx, setSelectedCandidateIdx] = useState(0);
 
+  // 风格选项，全量采用 Lucide 矢量图标
   const AI_STYLE_OPTIONS = [
-    { value: 'original_remaster', label: '📷 保持原图真实写实 (AI 原图保真重构 · 默认)' },
-    { value: 'cartoon', label: '🎨 Q版卡通纯色 (清晰黑描边)' },
-    { value: 'realistic', label: '👑 精致写实高对比 (层次丰富)' },
-    { value: 'flat', label: '📐 扁平大色块 (极好拼装)' },
-    { value: 'binary', label: '🕹️ 黑白复古街机 (二值像素)' },
+    { value: 'original_remaster', label: '原图真实写实 (AI 保真重构 · 默认)', icon: Camera },
+    { value: 'cartoon', label: 'Q版卡通纯色 (清晰黑描边)', icon: Sparkles },
+    { value: 'realistic', label: '精致写实高对比 (层次丰富)', icon: Crown },
+    { value: 'flat', label: '扁平大色块 (极好拼装)', icon: LayoutGrid },
+    { value: 'binary', label: '黑白复古街机 (二值像素)', icon: Gamepad2 },
   ];
 
   const showStatus = (type, text) => {
@@ -51,7 +76,7 @@ export default function OriginalImageCard({
     reader.onload = (e) => {
       onImageChanged(e.target.result);
       setAiCandidates([]); // 重置历史候选
-      showStatus('success', '已载入新照片！可直接点击下方【AI 智能重构】或【原图直接上板】');
+      showStatus('success', '已载入新照片！可直接调整右侧尺寸并实时上板');
     };
     reader.readAsDataURL(file);
   };
@@ -61,7 +86,7 @@ export default function OriginalImageCard({
     if (aiCandidates[idx]) {
       setSelectedCandidateIdx(idx);
       onImageChanged(aiCandidates[idx]);
-      showStatus('success', `已切换至【AI 方案 ${idx + 1}】，插板已同步刷新！`);
+      showStatus('success', `已切换至【方案 ${idx + 1}】，插板已同步刷新！`);
     }
   };
 
@@ -79,7 +104,7 @@ export default function OriginalImageCard({
     }
 
     setIsAiGenerating(true);
-    showStatus('info', '🚀 正在向 AI 接口发起请求，多方案重构中...');
+    showStatus('info', '正在向 AI 接口发起请求，多方案重构中...');
 
     try {
       const file = await ensureImageFile(currentImageSrc, 'reference.png');
@@ -89,7 +114,6 @@ export default function OriginalImageCard({
         gridWidth: gridSize,
       });
 
-      console.log('Sending AI Image Edit request...', { file, compiledPrompt });
       const res = await editAiImage({ imageFile: file, prompt: compiledPrompt });
 
       if (res && res.candidates && res.candidates.length > 0) {
@@ -98,9 +122,9 @@ export default function OriginalImageCard({
         onImageChanged(res.candidates[0]);
 
         if (res.candidates.length > 1) {
-          showStatus('success', `✅ AI 成功生成 ${res.candidates.length} 组候选方案！可在下方缩略图点击自由对比切换！`);
+          showStatus('success', `AI 成功生成 ${res.candidates.length} 组候选方案！可在下方缩略图点击自由对比切换！`);
         } else {
-          showStatus('success', '✅ AI 重绘成功！已从 API 接收高清图并自动上板！');
+          showStatus('success', 'AI 重绘成功！已从 API 接收高清图并自动上板！');
         }
       } else {
         throw new Error('AI 接口未返回有效的图像 URL');
@@ -118,7 +142,15 @@ export default function OriginalImageCard({
     if (!currentImageSrc) return;
     onImageChanged(currentImageSrc);
     setAiCandidates([]);
-    showStatus('success', '✅ 已按照原图真实色彩与画风直接量化生成图纸！');
+    showStatus('success', '已按照原图真实色彩与画风直接量化生成图纸！');
+  };
+
+  // 点击快捷样张
+  const handleQuickPreset = (preset) => {
+    if (onSelectPreset) {
+      onSelectPreset(preset);
+      showStatus('success', `已载入预设样张【${preset.name}】！`);
+    }
   };
 
   return (
@@ -129,25 +161,181 @@ export default function OriginalImageCard({
           <span className="text-amber-500">
             <Upload className="w-4 h-4" />
           </span>
-          <h2 className="text-sm font-bold text-stone-900">原图与 AI 重绘</h2>
+          <h2 className="text-sm font-bold text-stone-900">图纸原图与采样</h2>
         </div>
-        <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 font-medium">
-          API 就绪
-        </span>
+        <div className="flex items-center gap-2">
+          {hasApiKey ? (
+            <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 font-medium flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+              AI 就绪
+            </span>
+          ) : (
+            <span className="text-[10px] px-2 py-0.5 rounded-full bg-stone-100 text-stone-600 border border-stone-200 font-medium">
+              本地模式
+            </span>
+          )}
+        </div>
       </div>
 
       {/* 原图主预览视窗 */}
-      <div className="relative rounded-2xl bg-stone-950 p-1 border border-stone-200 shadow-inner flex items-center justify-center min-h-[190px] overflow-hidden group">
+      <div className="relative rounded-2xl bg-stone-950 p-1 border border-stone-200 shadow-inner flex items-center justify-center min-h-[180px] max-h-[220px] overflow-hidden group">
         {currentImageSrc ? (
           <img
             src={currentImageSrc}
             alt="原图预览"
-            className="max-h-[220px] w-auto max-w-full object-contain rounded-xl"
+            className="max-h-[210px] w-auto max-w-full object-contain rounded-xl"
           />
         ) : (
           <div className="text-center p-4">
             <ImageIcon className="w-8 h-8 mx-auto text-stone-500 mb-2" />
             <p className="text-xs text-stone-400">暂无原图，请点击下方上传</p>
+          </div>
+        )}
+      </div>
+
+      {/* 快捷经典样张试玩栏 (无需任何配置，一键上板) */}
+      <div className="space-y-1.5">
+        <div className="flex items-center justify-between text-[11px] text-stone-500">
+          <span className="font-semibold flex items-center gap-1">
+            <Sparkles className="w-3 h-3 text-amber-500" />
+            <span>精选样张试玩</span>
+          </span>
+          <span className="text-[10px] text-stone-400">点击即刻上板</span>
+        </div>
+        <div className="grid grid-cols-4 gap-1.5">
+          <button
+            type="button"
+            onClick={() => {
+              onImageChanged(defaultSampleImg);
+              showStatus('success', '已恢复默认超清全色谱样张！');
+            }}
+            className="px-1.5 py-1 rounded-lg bg-stone-50 hover:bg-stone-100 border border-stone-200 text-stone-700 text-[10px] font-medium truncate transition-colors text-center"
+            title="默认超清全色谱示范图"
+          >
+            超清全色谱
+          </button>
+          {PRESET_GALLERY.slice(0, 3).map((p) => (
+            <button
+              key={p.id}
+              type="button"
+              onClick={() => handleQuickPreset(p)}
+              className="px-1.5 py-1 rounded-lg bg-stone-50 hover:bg-stone-100 border border-stone-200 text-stone-700 text-[10px] font-medium truncate transition-colors text-center"
+              title={`${p.name} (${p.width}×${p.height}格)`}
+            >
+              {p.name.split(' ')[0]}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* 更换本地图片按键与直接上板 */}
+      <div className="grid grid-cols-2 gap-2 pt-1">
+        <input
+          id="change-photo-input"
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={(e) => {
+            if (e.target.files?.[0]) handleLocalFileChange(e.target.files[0]);
+          }}
+        />
+        <button
+          onClick={() => document.getElementById('change-photo-input').click()}
+          className="py-2 px-2.5 rounded-xl bg-stone-100 hover:bg-stone-200 border border-stone-200 text-stone-800 text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors shadow-2xs active:scale-98"
+        >
+          <RefreshCw className="w-3.5 h-3.5 text-stone-500" />
+          <span>上传本地图片</span>
+        </button>
+
+        <button
+          onClick={handleLocalDirectQuantize}
+          disabled={isAiGenerating}
+          className="py-2 px-2.5 rounded-xl bg-stone-900 hover:bg-stone-800 text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors shadow-2xs active:scale-98"
+        >
+          <Zap className="w-3.5 h-3.5 text-amber-400" />
+          <span>原图直接上板</span>
+        </button>
+      </div>
+
+      {/* AI 灵感重绘与风格演化 (可折叠抽屉，让界面保持极简清爽) */}
+      <div className="pt-2 border-t border-stone-100">
+        <button
+          type="button"
+          onClick={() => setIsAiDrawerOpen(!isAiDrawerOpen)}
+          className="w-full flex items-center justify-between py-1.5 text-xs font-bold text-stone-800 hover:text-amber-700 transition-colors"
+        >
+          <span className="flex items-center gap-1.5">
+            <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+            <span>AI 智能重构与风格变换</span>
+            <span className="text-[10px] font-normal text-stone-400 px-1.5 py-0.2 rounded-full bg-stone-100">
+              进阶功能
+            </span>
+          </span>
+          {isAiDrawerOpen ? (
+            <ChevronUp className="w-3.5 h-3.5 text-stone-400" />
+          ) : (
+            <ChevronDown className="w-3.5 h-3.5 text-stone-400" />
+          )}
+        </button>
+
+        {isAiDrawerOpen && (
+          <div className="mt-2.5 space-y-2.5 animate-studio-in">
+            {/* 未配置 Key 提示条 */}
+            {!hasApiKey && (
+              <div className="p-2 rounded-xl bg-amber-50 border border-amber-200/80 text-[11px] text-amber-800 flex items-center justify-between">
+                <span>需配置 API Key 方可调用云端生图</span>
+                <button
+                  type="button"
+                  onClick={onOpenSettings}
+                  className="font-bold underline hover:text-amber-900 flex items-center gap-0.5 ml-1"
+                >
+                  <Settings className="w-3 h-3" />
+                  <span>去设置</span>
+                </button>
+              </div>
+            )}
+
+            <div>
+              <label className="block text-[11px] font-semibold text-stone-700 mb-1">
+                重构风格：
+              </label>
+              <CustomDropdown
+                options={AI_STYLE_OPTIONS}
+                value={aiStyle}
+                onChange={setAiStyle}
+              />
+            </div>
+
+            <div>
+              <label className="block text-[11px] font-semibold text-stone-600 mb-1">
+                微调补充提示词 (可选)：
+              </label>
+              <textarea
+                rows={1}
+                value={aiPrompt}
+                onChange={(e) => setAiPrompt(e.target.value)}
+                placeholder="例如：保留眼睛高光、强调光影层次..."
+                className="w-full px-3 py-1.5 rounded-xl bg-stone-50 border border-stone-200 text-stone-900 placeholder-stone-400 text-xs focus:outline-none focus:border-stone-900"
+              />
+            </div>
+
+            <button
+              onClick={handleRealAiRemaster}
+              disabled={isAiGenerating}
+              className="w-full py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 active:scale-98 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md hover:shadow-lg transition-all disabled:opacity-50"
+            >
+              {isAiGenerating ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>AI 正在重构出图中...</span>
+                </>
+              ) : (
+                <>
+                  <Sparkles className="w-3.5 h-3.5 fill-current" />
+                  <span>开始 AI 智能重绘</span>
+                </>
+              )}
+            </button>
           </div>
         )}
       </div>
@@ -182,7 +370,6 @@ export default function OriginalImageCard({
                     alt={`候选方案 ${idx + 1}`}
                     className="w-full h-full object-cover"
                   />
-                  {/* 方案编号标牌 */}
                   <div
                     className={`absolute bottom-0 inset-x-0 py-0.5 text-center text-[9px] font-bold ${
                       isSelected
@@ -204,100 +391,23 @@ export default function OriginalImageCard({
         </div>
       )}
 
-      {/* 更换本地图片按键 */}
-      <div>
-        <input
-          id="change-photo-input"
-          type="file"
-          accept="image/*"
-          className="hidden"
-          onChange={(e) => {
-            if (e.target.files?.[0]) handleLocalFileChange(e.target.files[0]);
-          }}
-        />
-        <button
-          onClick={() => document.getElementById('change-photo-input').click()}
-          className="w-full py-2 rounded-xl bg-stone-50 hover:bg-stone-100 border border-stone-200 text-stone-700 hover:text-stone-900 text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors shadow-xs"
+      {/* 状态即时提示条 (全量替换为 Lucide 状态图标) */}
+      {statusMessage && (
+        <div
+          className={`p-2.5 rounded-xl text-xs flex items-start gap-2 animate-studio-in ${
+            statusMessage.type === 'success'
+              ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+              : statusMessage.type === 'error'
+              ? 'bg-rose-50 text-rose-800 border border-rose-200'
+              : 'bg-amber-50 text-amber-800 border border-amber-200'
+          }`}
         >
-          <RefreshCw className="w-3.5 h-3.5 text-stone-500" />
-          <span>更换本地照片</span>
-        </button>
-      </div>
-
-      {/* AI 重构控制区 */}
-      <div className="pt-2 border-t border-stone-100 space-y-2.5 overflow-visible relative z-30">
-        <div>
-          <label className="block text-[11px] font-semibold text-stone-700 mb-1">
-            AI 重构画风：
-          </label>
-          <CustomDropdown
-            options={AI_STYLE_OPTIONS}
-            value={aiStyle}
-            onChange={setAiStyle}
-          />
+          {statusMessage.type === 'success' && <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />}
+          {statusMessage.type === 'error' && <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />}
+          {statusMessage.type === 'info' && <Loader2 className="w-4 h-4 text-amber-600 shrink-0 mt-0.5 animate-spin" />}
+          <div className="flex-1 font-medium">{statusMessage.text}</div>
         </div>
-
-        <div>
-          <label className="block text-[11px] font-semibold text-stone-600 mb-1">
-            微调补充说明 (可选，不填默认全自动保真)：
-          </label>
-          <textarea
-            rows={1}
-            value={aiPrompt}
-            onChange={(e) => setAiPrompt(e.target.value)}
-            placeholder="可选：例如保留眼睛高光、强调光影细节..."
-            className="w-full px-3 py-1.5 rounded-xl bg-stone-50 border border-stone-200 text-stone-900 placeholder-stone-400 text-xs focus:outline-none focus:border-stone-900"
-          />
-        </div>
-
-        {/* 两个清晰明确的执行主按键 */}
-        <div className="space-y-2 pt-1">
-          <button
-            onClick={handleRealAiRemaster}
-            disabled={isAiGenerating}
-            className="w-full py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 active:scale-98 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md hover:shadow-lg transition-all disabled:opacity-50"
-          >
-            {isAiGenerating ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" />
-                <span>AI 正在绘制图纸中...</span>
-              </>
-            ) : (
-              <>
-                <Sparkles className="w-3.5 h-3.5 fill-current" />
-                <span>AI 智能重绘图纸</span>
-              </>
-            )}
-          </button>
-
-          <button
-            onClick={handleLocalDirectQuantize}
-            disabled={isAiGenerating}
-            className="w-full py-2 rounded-xl bg-stone-100 hover:bg-stone-200 active:scale-98 border border-stone-200 text-stone-800 font-semibold text-xs flex items-center justify-center gap-1.5 transition-colors"
-          >
-            <Zap className="w-3.5 h-3.5 text-stone-600" />
-            <span>原图直接生成图纸</span>
-          </button>
-        </div>
-
-        {/* 状态即时提示条 */}
-        {statusMessage && (
-          <div
-            className={`p-2.5 rounded-xl text-xs flex items-start gap-2 animate-studio-in ${
-              statusMessage.type === 'success'
-                ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
-                : statusMessage.type === 'error'
-                ? 'bg-rose-50 text-rose-800 border border-rose-200'
-                : 'bg-amber-50 text-amber-800 border border-amber-200'
-            }`}
-          >
-            {statusMessage.type === 'success' && <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />}
-            {statusMessage.type === 'error' && <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />}
-            {statusMessage.type === 'info' && <Loader2 className="w-4 h-4 text-amber-600 shrink-0 mt-0.5 animate-spin" />}
-            <div className="flex-1 font-medium">{statusMessage.text}</div>
-          </div>
-        )}
-      </div>
+      )}
     </GlassCard>
   );
 }
