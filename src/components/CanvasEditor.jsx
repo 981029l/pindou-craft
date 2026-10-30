@@ -23,9 +23,8 @@ import {
   CheckCircle2,
   ArrowLeftRight
 } from 'lucide-react'; // # 图标资源引用
-import { getPaletteDataByBrand } from '../data/paletteManager';
-import MagneticDock from './ui/MagneticDock';
-import SplitFlapDisplay from './ui/SplitFlapDisplay'; // # 色卡数据管理器
+import { getPaletteDataByBrand } from '../data/paletteManager'; // # 色卡数据管理器
+import SplitFlapDisplay from './ui/SplitFlapDisplay';
 
 export default function CanvasEditor({ // # 画布编辑器与竞品级用料矩阵工作台
   gridData,
@@ -154,94 +153,6 @@ export default function CanvasEditor({ // # 画布编辑器与竞品级用料矩
     setZoom(safeScale);
     setPan({ x: 0, y: 0 });
   }, [width, height, baseCellSize, rulerOffset]);
-
-  // 底部 macOS 磁吸工具坞项配置 (来自 Componentry 规范)
-  const dockItems = React.useMemo(() => [
-    {
-      id: 'pencil',
-      label: '铅笔画笔 (B)',
-      icon: <Pencil className="w-4 h-4" />,
-      isActive: currentTool === 'pencil',
-      onClick: () => setCurrentTool('pencil'),
-    },
-    {
-      id: 'bucket',
-      label: '油漆桶填色 (G)',
-      icon: <PaintBucket className="w-4 h-4" />,
-      isActive: currentTool === 'bucket',
-      onClick: () => setCurrentTool('bucket'),
-    },
-    {
-      id: 'picker',
-      label: '吸管取色 (I)',
-      icon: <Pipette className="w-4 h-4" />,
-      isActive: currentTool === 'picker',
-      onClick: () => setCurrentTool('picker'),
-    },
-    {
-      id: 'eraser',
-      label: '橡皮擦 (E)',
-      icon: <Eraser className="w-4 h-4" />,
-      isActive: currentTool === 'eraser',
-      onClick: () => setCurrentTool('eraser'),
-    },
-    {
-      id: 'hand',
-      label: '抓手平移 (H/空格)',
-      icon: <Hand className="w-4 h-4" />,
-      isActive: currentTool === 'hand',
-      onClick: () => setCurrentTool('hand'),
-    },
-    { type: 'divider' },
-    {
-      id: 'undo',
-      label: '撤销 (Ctrl+Z)',
-      icon: <Undo2 className="w-4 h-4" />,
-      disabled: !canUndo,
-      onClick: undo,
-    },
-    {
-      id: 'redo',
-      label: '重做 (Ctrl+Y)',
-      icon: <Redo2 className="w-4 h-4" />,
-      disabled: !canRedo,
-      onClick: redo,
-    },
-    { type: 'divider' },
-    {
-      id: 'beadStyle',
-      label: `质感: ${beadStyle === 'gloss' ? '微珠高光' : beadStyle === 'pixel' ? '像素方块' : '经典打孔'}`,
-      icon: <Sparkles className="w-4 h-4" />,
-      isActive: beadStyle === 'gloss',
-      onClick: () => {
-        setBeadStyle(prev => prev === 'gloss' ? 'pixel' : prev === 'pixel' ? 'bead' : 'gloss');
-      },
-    },
-    {
-      id: 'zoomIn',
-      label: '放大画布',
-      icon: <ZoomIn className="w-4 h-4" />,
-      onClick: () => {
-        isUserZoomedRef.current = true;
-        setZoom(prev => Math.min(8.0, Number((prev + 0.3).toFixed(3))));
-      },
-    },
-    {
-      id: 'zoomOut',
-      label: '缩小画布',
-      icon: <ZoomOut className="w-4 h-4" />,
-      onClick: () => {
-        isUserZoomedRef.current = true;
-        setZoom(prev => Math.max(0.02, Number((prev - 0.3).toFixed(3))));
-      },
-    },
-    {
-      id: 'fit',
-      label: '居中铺满 (F)',
-      icon: <Shrink className="w-4 h-4" />,
-      onClick: fitToViewport,
-    },
-  ], [currentTool, canUndo, canRedo, undo, redo, beadStyle, fitToViewport]);
 
   // 仅在图纸尺寸发生改变时执行初始铺满
   useEffect(() => {
@@ -1057,13 +968,8 @@ export default function CanvasEditor({ // # 画布编辑器与竞品级用料矩
           </div>
         )}
 
-        {/* Componentry 风格 macOS 弹簧物理磁吸悬浮工具坞 (居中悬浮于画布视口底部) */}
-        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-30 pointer-events-auto max-w-[95vw] overflow-x-auto no-scrollbar scale-90 sm:scale-100 origin-bottom">
-          <MagneticDock items={dockItems} baseSize={36} />
-        </div>
-
         {/* 画布右下角悬浮快捷放大控制器与高倍微距档位 */}
-        <div className="hidden xl:flex absolute bottom-3 right-3 z-30 items-center gap-1 bg-white/90 backdrop-blur-md px-2 py-1 rounded-xl shadow-lg border border-stone-200/90 text-xs">
+        <div className="absolute bottom-3 right-3 z-30 flex items-center gap-1 bg-white/90 backdrop-blur-md px-2 py-1 rounded-xl shadow-lg border border-stone-200/90 text-xs">
           {/* 滚轮缩放专属开关按钮 */}
           <button
             type="button"
