@@ -75,8 +75,8 @@
     </view>
   </view>
 
-  <!-- # 3. 评论讨论区 -->
-  <view class="artisan-card comments-card">
+  <!-- # 3. 评论讨论区 (整改合规：下线 UGC 评论区以彻底避免 5.18 内容安全风险) -->
+  <view wx:if="{{false}}" class="artisan-card comments-card">
     <view class="comments-header">
       <view class="comments-title-wrap">
         <text class="icon-lucide icon-sparkles" style="color: #F59E0B; margin-right: 8rpx; width: 28rpx; height: 28rpx;"></text>
